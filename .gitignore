@@ -133,3 +133,7 @@ dmypy.json
 
 # DICOM
 *.dcm
+
+# NIFTI
+*.nii
+*.nii.gz
