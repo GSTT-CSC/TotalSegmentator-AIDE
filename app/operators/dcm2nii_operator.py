@@ -3,6 +3,7 @@
 import glob
 import logging
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -24,27 +25,32 @@ class Dcm2NiiOperator(Operator):
 
         input_path = str(op_input.get("input_files").path)
 
-        # input_files = [f for f in input_path.iterdir() if f.is_file()]  # old code if all DICOMs in /input folder
-        input_files = parse_recursively_dcm_files(input_path)
+        # Set local_testing = True if doing local testing
+        local_testing = True
+        if local_testing:
+            input_files = sorted(os.listdir(input_path))  # assumes .dcm in input/
+        else:
+            input_files = parse_recursively_dcm_files(input_path)  # assumes AIDE MinIO structure
 
-        # TODO: edit these paths/directories to fit with TotalSegmentator pipeline - won't need so much path wrangling
-        dcm_stacks_path = os.path.join(input_path, 'dcm_stacks')
-        if not os.path.exists(dcm_stacks_path):
-            os.makedirs(dcm_stacks_path)
+        # move input DICOM files for later
+        dcm_input_path = os.path.join(input_path, 'dcm_input_path')
+        if not os.path.exists(dcm_input_path):
+            os.makedirs(dcm_input_path)
 
         for f in input_files:
-            shutil.copy(f, dcm_stacks_path)
+            shutil.move(os.path.join(input_path, f), dcm_input_path)
 
-        nii_path = os.path.join(input_path, 'nii_processing')
-        if not os.path.exists(nii_path):
-            os.makedirs(nii_path)
-        op_output.set(DataPath(nii_path))
+        # # init nii_processing directory
+        # nii_path = os.path.join(input_path, 'nii_processing')
+        # if not os.path.exists(nii_path):
+        #     os.makedirs(nii_path)
+        # op_output.set(DataPath(nii_path))
 
         # Run dcm2niix
-        subprocess.run(["dcm2niix", "-z", "y", "-o", nii_path, "-f", "stack-%s", dcm_stacks_path])
+        subprocess.run(["dcm2niix", "-z", "y", "-o", input_path, "-f", "input-ct-dataset", dcm_input_path])
 
         # Delete superfluous .json files
-        json_files = glob.glob(nii_path + "/*.json")
+        json_files = glob.glob(input_path + "/*.json")
         for json_file in json_files:
             os.remove(json_file)
 
