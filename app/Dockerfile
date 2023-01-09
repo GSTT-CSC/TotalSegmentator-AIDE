@@ -15,7 +15,7 @@ RUN git clone https://github.com/rordenlab/dcm2niix.git --branch master --single
 
 ENV PATH="$PATH:/bin/dcm2niix/build/bin"
 
-WORKDIR /
+WORKDIR /var/monai
 
 # Add TotalSegmentator to MAP
-FROM wasserth/totalsegmentator_container:master AS totalsegmentator
+# FROM wasserth/totalsegmentator_container:master AS totalsegmentator
