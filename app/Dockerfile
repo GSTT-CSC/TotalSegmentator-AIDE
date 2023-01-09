@@ -1,3 +1,4 @@
+# Use initial MAP for build
 FROM ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.0 AS build
 
 # Add dcm2niix to MAP
@@ -14,9 +15,7 @@ RUN git clone https://github.com/rordenlab/dcm2niix.git --branch master --single
 
 ENV PATH="$PATH:/bin/dcm2niix/build/bin"
 
-WORKDIR /var/monai
-
+WORKDIR /
 
 # Add TotalSegmentator to MAP
-
-# TODO: add TotalSegmentator
+FROM wasserth/totalsegmentator_container:master AS totalsegmentator
