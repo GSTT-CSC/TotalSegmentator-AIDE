@@ -15,7 +15,14 @@ RUN git clone https://github.com/rordenlab/dcm2niix.git --branch master --single
 
 ENV PATH="$PATH:/bin/dcm2niix/build/bin"
 
-WORKDIR /var/monai
-
 # Add TotalSegmentator to MAP
-# FROM wasserth/totalsegmentator_container:master AS totalsegmentator
+WORKDIR /home
+
+RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y \
+    libsm6 libxrender-dev libxext6 ffmpeg
+
+RUN git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE.git \
+    && cd TotalSegmentator-AIDE \
+    && python -m pip install TotalSegmentator \
+
+WORKDIR /var/monai
