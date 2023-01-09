@@ -16,6 +16,7 @@ git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE.git
 python -m venv venv
 source venv/bin/activate
 
+pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 ```
 
