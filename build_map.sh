@@ -28,4 +28,4 @@ monai-deploy run ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.0 input/ output/
 
 # Optional: Test scripts within Docker container
 # - On DGX:
-docker run -it --rm -v /home/troberts/code/TotalSegmentator-AIDE/input:/home/recon --entrypoint /bin/bash ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.0
+docker run -it --rm -v /home/troberts/code/TotalSegmentator-AIDE/input:/var/monai/input/ --entrypoint /bin/bash ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.0
