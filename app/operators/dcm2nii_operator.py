@@ -44,7 +44,6 @@ class Dcm2NiiOperator(Operator):
         # nii_path = os.path.join(input_path, 'nii_processing')
         # if not os.path.exists(nii_path):
         #     os.makedirs(nii_path)
-        # op_output.set(DataPath(nii_path))
 
         # Run dcm2niix
         subprocess.run(["dcm2niix", "-z", "y", "-o", input_path, "-f", "input-ct-dataset", dcm_input_path])
@@ -54,9 +53,10 @@ class Dcm2NiiOperator(Operator):
         for json_file in json_files:
             os.remove(json_file)
 
-        logging.info(f"Performed dcm2niix conversion inside {self.compute.__name__}")
+        # Set output path for next operator
+        op_output.set(DataPath(input_path))
 
-        logging.info(f"End {self.compute.__name__}")
+        logging.info(f"Performed dcm2niix conversion inside {self.compute.__name__}")
 
 
 def parse_recursively_dcm_files(input_path):
