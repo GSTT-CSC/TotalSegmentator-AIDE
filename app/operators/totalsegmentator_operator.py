@@ -20,21 +20,24 @@ class TotalSegmentatorOperator(Operator):
 
         logging.info(f"Begin {self.compute.__name__}")
 
-        nii_path = op_input.get("input_files").path
+        input_path = op_input.get("input_files").path
 
-        input_dir = os.path.dirname(nii_path)
+        # input_dir = os.path.dirname(input_path)
 
-        # TODO: make pathing consistent with previous operator
-        # nii_3d_path = os.path.join(input_dir, "nii_3d")
-        # if not os.path.exists(nii_3d_path):
-        #     os.makedirs(nii_3d_path)
-        op_output.set(DataPath(input_dir))  # cludge to avoid op_output not exist error
-
-        op_output_folder_path = op_output.get().path
-        op_output_folder_path.mkdir(parents=True, exist_ok=True)
+        # Create TotalSegmentator output directory
+        nii_output_path = os.path.join(input_path, "nii_output")
+        if not os.path.exists(nii_output_path):
+            os.makedirs(nii_output_path)
 
         # TODO: setup TotalSegmentator to execute with subprocess
         # Run TotalSegmentator
-        subprocess.run(["TotalSegmentator", "-i", nii_path, "-o", "output"])
+        subprocess.run(["TotalSegmentator", "-i", input_path, "-o", nii_output_path])
+
+        logging.info(f"Performed TotalSegmentator processing")
+
+        # Set output path for next operator
+        op_output.set(DataPath(input_path))  # cludge to avoid op_output not exist error
+        op_output_folder_path = op_output.get().path
+        op_output_folder_path.mkdir(parents=True, exist_ok=True)
 
         logging.info(f"End {self.compute.__name__}")
