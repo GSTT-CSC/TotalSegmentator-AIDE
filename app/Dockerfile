@@ -21,8 +21,9 @@ WORKDIR /home
 RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y \
     libsm6 libxrender-dev libxext6 ffmpeg
 
-RUN git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE.git \
-    && cd TotalSegmentator-AIDE \
-    && python -m pip install TotalSegmentator
+# RUN git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE.git \
+#     && cd TotalSegmentator-AIDE \
+
+RUN python -m pip install TotalSegmentator
 
 WORKDIR /var/monai
