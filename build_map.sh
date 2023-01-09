@@ -14,7 +14,7 @@ monai-deploy package app --tag ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0
 
 # Push to GHCR
 # - requires GH PAT
-# - export export CR_PAT=<PAT>
+# - export CR_PAT=<PAT>
 echo $CR_PAT | docker login ghcr.io -u tomaroberts --password-stdin
 docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.0
 
