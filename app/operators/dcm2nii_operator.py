@@ -33,7 +33,7 @@ class Dcm2NiiOperator(Operator):
             input_files = parse_recursively_dcm_files(input_path)  # assumes AIDE MinIO structure
 
         # move input DICOM files for later
-        dcm_input_path = os.path.join(input_path, 'dcm_input_path')
+        dcm_input_path = os.path.join(input_path, 'dcm_input')
         if not os.path.exists(dcm_input_path):
             os.makedirs(dcm_input_path)
 
@@ -56,7 +56,9 @@ class Dcm2NiiOperator(Operator):
         # Set output path for next operator
         op_output.set(DataPath(input_path))
 
-        logging.info(f"Performed dcm2niix conversion inside {self.compute.__name__}")
+        logging.info(f"Performed dcm2niix conversion")
+
+        logging.info(f"End {self.compute.__name__}")
 
 
 def parse_recursively_dcm_files(input_path):
