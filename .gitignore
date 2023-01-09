@@ -137,3 +137,6 @@ dmypy.json
 # NIFTI
 *.nii
 *.nii.gz
+
+# Mac
+.DS_Store
