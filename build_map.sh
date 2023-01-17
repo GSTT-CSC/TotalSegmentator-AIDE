@@ -3,10 +3,10 @@
 # ensure Docker running
 # put .dcm files in input/
 
-# Test MAP code locally
+# Test app locally
 python app -i input -o output
 
-# Test MAP with MONAI Deploy
+# Test app with MONAI Deploy
 monai-deploy exec app -i input -o output
 
 # Initial packaging of MAP
@@ -23,7 +23,7 @@ docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.0
 git checkout map
 docker build -t ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.0 app/
 
-# Test MAP-Extra with MONAI Deploy
+# Test MAP with MONAI Deploy
 monai-deploy run ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.0 input/ output/
 
 # Optional: Test scripts within Docker container
