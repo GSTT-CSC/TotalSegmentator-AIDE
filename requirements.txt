@@ -8,6 +8,7 @@ charset-normalizer==2.1.1
 colorama==0.4.6
 contourpy==1.0.6
 cycler==0.11.0
+dataclasses==0.6
 dicom2nifti==2.4.7
 dill==0.3.6
 fonttools==4.38.0
