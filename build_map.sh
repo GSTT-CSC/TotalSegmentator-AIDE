@@ -19,8 +19,6 @@ echo $CR_PAT | docker login ghcr.io -u tomaroberts --password-stdin
 docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.0
 
 # Build 3rd-party software on top of MAP
-# CPU mode
-git checkout map
 docker build -t ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.0 app/
 
 # Test MAP with MONAI Deploy
