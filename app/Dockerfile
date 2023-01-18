@@ -22,8 +22,7 @@ RUN apt-get update && apt-get install --no-install-recommends --no-install-sugge
     libsm6 libxrender-dev libxext6 ffmpeg
 
 RUN git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE.git \
-    && cd TotalSegmentator-AIDE
-
-RUN python -m pip install -r requirements.txt
+    && cd TotalSegmentator-AIDE \
+    && python -m pip install -r requirements.txt
 
 WORKDIR /var/monai
