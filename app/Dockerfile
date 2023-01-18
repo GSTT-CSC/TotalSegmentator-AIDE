@@ -15,17 +15,18 @@ RUN git clone https://github.com/rordenlab/dcm2niix.git --branch master --single
 
 ENV PATH="$PATH:/bin/dcm2niix/build/bin"
 
-# Add TotalSegmentator-AIDE packages to MAP
+# Add TotalSegmentator and rt-utils to MAP
 WORKDIR /home
 
 RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y \
     libsm6 libxrender-dev libxext6 ffmpeg
 
-RUN git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE.git \
-    && cd TotalSegmentator-AIDE \
-    && python -m pip install --upgrade pip \
-    && python -m pip install -r requirements.txt
-
+RUN python -m pip install TotalSegmentator
 RUN python -m pip install rt-utils
+
+# Workaround for opencv package issue
+# see here: https://stackoverflow.com/questions/72706073/attributeerror-partially-initialized-module-cv2-has-no-attribute-gapi-wip-gs
+RUN python -m pip uninstall -y opencv-python
+RUN python -m pip install opencv-python==4.5.5.64
 
 WORKDIR /var/monai
