@@ -10,13 +10,14 @@
 
 import logging
 
-from monai.deploy.core import Application
+from monai.deploy.core import Application, resource
 
 from operators.dcm2nii_operator import Dcm2NiiOperator
 from operators.rtstructwriter_operator import RTStructWriterOperator
 from operators.totalsegmentator_operator import TotalSegmentatorOperator
 
 
+@resource(cpu=1, gpu=1, memory="32Gi")
 class TotalSegmentatorApp(Application):
     """
     TotalSegmentator - segmentation of 104 anatomical structures in CT images.
