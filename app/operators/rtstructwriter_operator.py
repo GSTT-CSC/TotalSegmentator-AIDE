@@ -15,7 +15,7 @@ from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, 
 
 @md.input("input_files", DataPath, IOType.DISK)
 @md.output("dicom_files", DataPath, IOType.DISK)
-@md.env(pip_packages=["pydicom >= 2.3.0", "highdicom >= 0.18.2"])
+@md.env(pip_packages=["pydicom >= 2.3.0", "rt-utils >= 1.2.7"])
 class RTStructWriterOperator(Operator):
     """
     RTStructWriterOperator - converts TotalSegmentator NIfTI segmentations to DICOM RT Struct format
