@@ -29,12 +29,12 @@ class TotalSegmentatorOperator(Operator):
             logging.info(f"Found nii_input_file: {nii_input_file}")
 
         # Create TotalSegmentator output directory
-        nii_output_path = os.path.join(input_path, "nii_output")
-        if not os.path.exists(nii_output_path):
-            os.makedirs(nii_output_path)
+        nii_seg_output_path = os.path.join(input_path, "nii_seg_output")
+        if not os.path.exists(nii_seg_output_path):
+            os.makedirs(nii_seg_output_path)
 
         # Run TotalSegmentator
-        subprocess.run(["TotalSegmentator", "-i", nii_input_file, "-o", nii_output_path])
+        subprocess.run(["TotalSegmentator", "-i", nii_input_file, "-o", nii_seg_output_path])
 
         logging.info(f"Performed TotalSegmentator processing")
 
