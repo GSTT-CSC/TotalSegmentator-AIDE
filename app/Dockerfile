@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install --no-install-recommends --no-install-sugge
 
 RUN git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE.git \
     && cd TotalSegmentator-AIDE \
+    && python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt
 
 WORKDIR /var/monai
