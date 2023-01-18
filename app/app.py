@@ -13,7 +13,7 @@ import logging
 from monai.deploy.core import Application
 
 from operators.dcm2nii_operator import Dcm2NiiOperator
-from operators.dcmwriter_operator import DicomWriterOperator
+from operators.rtstructwriter_operator import RTStructWriterOperator
 from operators.totalsegmentator_operator import TotalSegmentatorOperator
 
 
@@ -38,13 +38,13 @@ class TotalSegmentatorApp(Application):
         # TotalSegmentator segmentation
         totalsegmentator_op = TotalSegmentatorOperator()
 
-        # DICOM Writer operator
+        # RT Struct Writer operator
         custom_tags = {"SeriesDescription": "AI generated image, not for clinical use."}
-        dcmwriter_op = DicomWriterOperator(custom_tags=custom_tags)
+        rtstructwriter_op = RTStructWriterOperator(custom_tags=custom_tags)
 
         # Operator pipeline
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"input_files": "input_files"})
-        self.add_flow(totalsegmentator_op, dcmwriter_op, {"input_files": "input_files"})
+        self.add_flow(totalsegmentator_op, rtstructwriter_op, {"input_files": "input_files"})
 
         logging.info(f"End {self.compose.__name__}")
 
