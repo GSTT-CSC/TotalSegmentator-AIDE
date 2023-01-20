@@ -11,9 +11,9 @@ from pathlib import Path
 class TestDcm2NiiConversion(unittest.TestCase):
 
     def setUp(self):
-        self.dcm_ref_path = Path('tests/data/dcm/')
-        self.nii_ref_file = Path('tests/data/nii/ct-test-data.nii.gz')
-        self.nii_gen_path = Path('tests/data/nii_generated/')
+        self.dcm_ref_path = Path('tests/data/dcm2nii/dcm/')
+        self.nii_ref_file = Path('tests/data/dcm2nii/nii/ct-test-data.nii.gz')
+        self.nii_gen_path = Path('tests/data/dcm2nii/nii_generated/')
 
     def tearDown(self):
         shutil.rmtree(self.nii_gen_path)
