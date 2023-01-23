@@ -22,7 +22,7 @@
       },
       "task_destinations": [
         {
-          "name": "clinical-review-task",
+          "name": "export-rt-struct",
           "conditions": []
         }
       ],
