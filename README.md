@@ -21,8 +21,8 @@ The TotalSegmentator MAP consists of three operators:
 ### Prerequisites
 - GPU-enabled machine
 - Docker
-  - Required for running the MAP. Not required for running source code.
-  
+  - Required for running the MAP. Not required for running source code
+
 ## Setup
 
 1. Download
