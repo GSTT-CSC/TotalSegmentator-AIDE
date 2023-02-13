@@ -40,11 +40,6 @@ class Dcm2NiiOperator(Operator):
         for f in input_files:
             shutil.move(os.path.join(input_path, f), dcm_input_path)
 
-        # # init nii_processing directory
-        # nii_path = os.path.join(input_path, 'nii_processing')
-        # if not os.path.exists(nii_path):
-        #     os.makedirs(nii_path)
-
         # Run dcm2niix
         subprocess.run(["dcm2niix", "-z", "y", "-o", input_path, "-f", "input-ct-dataset", dcm_input_path])
 
