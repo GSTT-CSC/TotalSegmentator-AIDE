@@ -101,4 +101,11 @@ Reminder: if GHCR requires Personal Access Token
 ```shell
 echo $CR_PAT | docker login ghcr.io -u <github-username> --password-stdin
 docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.0
-```
+```## GitHub Packages
+
+Note: two containers are present under GitHub Packages:
+- [`totalsegmentator-aide/map`](https://github.com/orgs/GSTT-CSC/packages/container/package/totalsegmentator-aide%2Fmap)
+- [`totalsegmentator-aide/map-init`](https://github.com/orgs/GSTT-CSC/packages/container/package/totalsegmentator-aide%2Fmap-init)
+
+The `map` version is for general usage and deployment. The `map-init` version is for developers who wish to build the 
+MAP from scratch as part of the two-step build process described above.
