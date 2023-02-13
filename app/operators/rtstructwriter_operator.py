@@ -69,15 +69,6 @@ class RTStructWriterOperator(Operator):
                 name=seg_name
             )
 
-            # TODO: in-plane rotation above not ideal.
-            #  Need to test with different datasets to understand extent of issue.
-            #  This problem stems from different packages manipulating the imaging data in different ways.
-            #  We have:
-            #  - original DICOMs
-            #  - NIfTI files output by TotalSegmentator
-            #  - RTStructBuilder object created by rt_utils
-            #  In testing, without the rotation below, the final rtstruct does not align with the original DICOMs.
-
         # save RT Struct
         rtstruct.save(os.path.join(dcm_output_path, rt_struct_output_filename))
         logging.info(f"RT Struct written to {os.path.join(dcm_output_path, rt_struct_output_filename)}")
