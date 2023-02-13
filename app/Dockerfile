@@ -29,4 +29,20 @@ RUN python -m pip install rt-utils
 RUN python -m pip uninstall -y opencv-python
 RUN python -m pip install opencv-python==4.5.5.64
 
+# Add TotalSegmentator model weights to container
+WORKDIR /root
+
+ENV WEIGHTS_DIR_1="/root/.totalsegmentator/nnunet/results/nnUNet/3d_fullres/Task251_TotalSegmentator_part1_organs_1139subj"
+ENV WEIGHTS_URL_1="https://zenodo.org/record/6802342/files/Task251_TotalSegmentator_part1_organs_1139subj.zip?download=1"
+ENV WEIGHTS_ZIP_1="Task256_TotalSegmentator_3mm_1139subj.zip"
+
+RUN mkdir ${TOTALSEG_WEIGHTS_PATH} \
+    && wget --directory-prefix ${TOTALSEG_WEIGHTS_PATH} ${WEIGHTS_URL} \
+    && unzip ${WEIGHTS_DIR}${WEIGHTS_ZIP_1} -d ${TOTALSEG_WEIGHTS_PATH} \
+    && rm ${TOTALSEG_WEIGHTS_PATH}${WEIGHTS_ZIP_1}
+
+# Set TOTALSEG_WEIGHTS_PATH ENV variable – this is auto-detected by TotalSegmentator
+# See: https://github.com/wasserth/TotalSegmentator/blob/f4651171a4c6eae686dd67b77efe6aa78911734d/totalsegmentator/libs.py#L77
+ENV TOTALSEG_WEIGHTS_PATH="/root/.totalsegmentator/nnunet/results/"
+
 WORKDIR /var/monai
