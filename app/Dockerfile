@@ -1,5 +1,5 @@
 # Use initial MAP for build
-FROM ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.0 AS build
+FROM ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.1 AS build
 
 # Add dcm2niix to MAP
 WORKDIR /bin
