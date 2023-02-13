@@ -1,6 +1,6 @@
 {
   "name": "totalsegmentator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Clinical Workflow for TotalSegmentator",
   "informatics_gateway": {
     "ae_title": "MONAI",
