@@ -1,0 +1,72 @@
+{
+  "name": "TotalSegmentator",
+  "version": "0.1.2",
+  "description": "Clinical Workflow for TotalSegmentator",
+  "informatics_gateway": {
+    "ae_title": "MONAI",
+    "data_origins": [],
+    "export_destinations": [
+      "PACS"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "totalsegmentator-task",
+      "description": "TotalSegmentator automatic CT segmentation",
+      "type": "argo",
+      "args": {
+        "workflow_template_name": "totalsegmentator-argo-template",
+        "server_url": "http://argo-argo-workflows-server.argo:2746",
+        "namespace": "argo",
+        "allow_insecure": "true"
+      },
+      "task_destinations": [
+        {
+          "name": "export-rt-struct",
+          "conditions": []
+        }
+      ],
+      "export_destinations": [],
+      "artifacts": {
+        "input": [
+          {
+            "name": "input-dicom",
+            "value": "{{ context.input.dicom }}",
+            "mandatory": true
+          }
+        ],
+        "output": [
+          {
+            "name": "output",
+            "value": "",
+            "mandatory": true
+          }
+        ]
+      },
+      "timeout_minutes": -1
+    },
+    {
+      "id": "export-rt-struct",
+      "description": "Export TotalSegmentator output RT Struct DICOMs",
+      "type": "export",
+      "args": {},
+      "task_destinations": [],
+      "export_destinations": [
+        {
+          "name": "PACS"
+        }
+      ],
+      "artifacts": {
+        "input": [
+          {
+            "name": "output",
+            "value": "{{ context.executions.totalsegmentator-task.artifacts.output }}",
+            "mandatory": true
+          }
+        ],
+        "output": []
+      },
+      "timeout_minutes": -1
+    }
+  ]
+}
