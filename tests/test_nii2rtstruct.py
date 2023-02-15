@@ -1,44 +1,67 @@
 import os
+import glob
 import shutil
-import unittest
-import subprocess
-import nibabel as nib
-import numpy as np
-from rt_utils import RTStructBuilder
-
 from pathlib import Path
+
+import unittest
+import numpy as np
+
+from rt_utils import RTStructBuilder
+from app.operators.rtstructwriter_operator import add_nii_roi_to_rtstruct, list_nii_files
 
 
 class TestNii2RTStruct(unittest.TestCase):
 
     def setUp(self):
-        self.nii_ref_path = Path('tests/data/rtstructwriter/nii/liver-test-seg.nii.gz')
-        self.rtstruct_ref_file = Path('tests/data/rtstructwriter/dcm/liver-test-rtstruct.dcm')
+        # test subset: public chest CT dataset, slices 81-100
+        self.dcm_ref_path = Path('tests/data/rtstructwriter/dcm/')
+        self.nii_ref_file = Path('tests/data/rtstructwriter/nii/ct-test-data-81-100.nii.gz')
+        self.nii_seg_ref_path = Path('tests/data/rtstructwriter/nii_seg')
+        self.rtstruct_ref_file = Path('tests/data/rtstructwriter/rtstruct/rt-struct-test-data-81-100.dcm')
         self.rtstruct_gen_path = Path('tests/data/rtstructwriter/rtstruct_generated/')
-        self.rtstruct_gen_filename = Path('generated-liver-test-rtstruct.dcm')
+        self.rtstruct_gen_filename = Path('generated-rtstruct-test-data.dcm')
 
-        # TODO: use/create small FOV/lightweight CT dataset for test purposes (e.g. < 10MB)
+        os.makedirs(self.rtstruct_gen_path, exist_ok=True)
 
     def tearDown(self):
         shutil.rmtree(self.rtstruct_gen_path)
 
+    def test_list_nii_files(self):
+        nii_seg_files = list_nii_files(self.nii_seg_ref_path)
+        num_nii_files_in_test_dir = len(glob.glob(str(self.nii_seg_ref_path) + '/*.nii*'))
+        num_files_in_list_nii_files = len(nii_seg_files)
+        self.assertEqual(num_nii_files_in_test_dir, num_files_in_list_nii_files,
+                         f"Number of NIfTI files in list does not equal number of NIfTI files in directory")
+
     def test_nii2rtstruct(self):
-        os.makedirs(self.rtstruct_gen_path, exist_ok=True)
+        nii_seg_files = list_nii_files(self.nii_seg_ref_path)
 
-        # TODO: need CT image .dcm dataset to initialise the rtstruct object
-        rtstruct = RTStructBuilder.create_new(dicom_series_path=dcm_input_path)
+        # instantiate RT Struct object
+        rtstruct_gen = RTStructBuilder.create_new(dicom_series_path=str(self.dcm_ref_path))
 
-        nii = nib.load(self.nii_ref_path)
-        nii_img = nii.get_fdata().astype("uint16").astype("bool")
-        nii_img = np.rot90(nii_img, 1, (0, 1))  # rotate nii to match DICOM orientation
-        rtstruct.add_roi(mask=nii_img, name='liver-test-seg')
-        rtstruct.save(os.path.join(self.rtstruct_gen_path, self.rtstruct_gen_filename))
+        # add segmentations to RT Struct
+        for idx, filename in enumerate(nii_seg_files):
+            add_nii_roi_to_rtstruct(self.nii_seg_ref_path, filename, rtstruct_gen)
 
-        # TODO: break this down into smaller unit tests:
-        #  - initialised rtstruct object
-        #  - generated nii_img == liver-test-seg nii_img
-        #  - generated rtstruct == liver-test-rtstruct.dcm (which I still need to create)
-        #  - test generated-rtstruct.dcm is legit DICOM (check tags etc.)
+        # save RT Struct
+        rtstruct_gen.save(os.path.join(self.rtstruct_gen_path, self.rtstruct_gen_filename))
+
+        # load test RTStruct
+        rtstruct_ref = RTStructBuilder.create_from(
+            dicom_series_path=str(self.dcm_ref_path),
+            rt_struct_path=str(self.rtstruct_ref_file)
+        )
+
+        # compare reference and generated contours based on pixel arrays
+        for seg_name in ['aorta', 'heart_myocardium', 'lung_lower_lobe_right']:
+            seg_ref = rtstruct_ref.get_roi_mask_by_name(seg_name)
+            seg_gen = rtstruct_gen.get_roi_mask_by_name(seg_name)
+            segs_equal = np.array_equal(seg_ref, seg_gen)
+            self.assertTrue(segs_equal, f"{seg_name} contour images not equal")
+
+        # TODO: add in more RTStruct tests, e.g.
+        #  - DICOM file tests
+        #  - DICOM metadata tests
 
 
 if __name__ == '__main__':
