@@ -1,6 +1,7 @@
 metadata:
   name: totalsegmentator-argo-template
   generateName: totalsegmentator-argo-template-
+  namespace: argo
 spec:
   templates:
     - name: totalsegmentator
@@ -32,7 +33,7 @@ spec:
       metadata: {}
       container:
         name: ''
-        image: ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.1
+        image: ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2
         command:
           - /bin/bash
           - '-c'
@@ -40,6 +41,15 @@ spec:
           - python3 -u /opt/monai/app/app.py
         resources:
           limits:
+            cpu: '20'
+            memory: 128Gi
             nvidia.com/gpu: '1'
+          requests:
+            cpu: '0'
+            memory: '0'
+            nvidia.com/gpu: '1'
+        imagePullPolicy: IfNotPresent
+      podSpecPatch: >-
+        {"initContainers":[{"name":"init","resources":{"limits":{"cpu":"1","memory":"1000Mi"},"requests":{"cpu":"0","memory":"0Mi"}}}],"containers":[{"name":"wait","resources":{"limits":{"cpu":"1","memory":"1000Mi"},"requests":{"cpu":"0","memory":"0Mi"}}}]}
   entrypoint: totalsegmentator
   arguments: {}
