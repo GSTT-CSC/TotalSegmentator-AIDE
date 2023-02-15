@@ -111,3 +111,14 @@ Note: two containers are present under GitHub Packages:
 
 The `map` version is for general usage and deployment. The `map-init` version is for developers who wish to build the 
 MAP from scratch as part of the two-step build process described above.
+
+## Running on AIDE
+To run TotalSegmentator on AIDE, two files from the `app/workflows` directory are required, namely:
+- `totalsegmentator.json` – AIDE Clinical Workflow file.
+  - Effectively a sequence of tasks run on AIDE
+- `totalsegmentator-argo-template.yaml` – Argo Workflow Template file.
+  - Called by the AIDE Clinical Workflow file. Executes the Totalsegmentator-AIDE MAP using Argo. This is the central 
+  task within the AIDE Clinical Workflow file.
+
+The `app/workflows` directory also contains four illustrative Argo Workflow Templates depending on system performance. 
+`low`, `medium`, `high` and `dgx` examples are provided with different CPU and RAM settings.
