@@ -39,6 +39,7 @@ pox==0.3.2
 ppft==1.7.6.6
 psutil==5.9.4
 pydicom==2.3.1
+pytest==7.2.1
 pyparsing==3.0.9
 python-dateutil==2.8.2
 python-gdcm==3.0.20
