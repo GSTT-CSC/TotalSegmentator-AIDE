@@ -40,7 +40,7 @@ class RTStructWriterOperator(Operator):
 
         # add TotalSegmentator segmentations to RT Struct
         for idx, filename in enumerate(nii_seg_files):
-            self.add_nii_roi_to_rtstruct(nii_seg_output_path, filename, rtstruct)
+            add_nii_roi_to_rtstruct(nii_seg_output_path, filename, rtstruct)
 
         # save RT Struct
         rtstruct.save(os.path.join(dcm_output_path, rt_struct_output_filename))
