@@ -23,9 +23,9 @@ class TotalSegmentatorApp(Application):
     TotalSegmentator - segmentation of 104 anatomical structures in CT images.
     """
 
-    name = "totalsegmentator"
+    name = "totalsegmentator-aide"
     description = "Robust segmentation of 104 anatomical structures in CT images"
-    version = "0.1.1"
+    version = "0.1.2"
 
     def compose(self):
         """Operators go in here

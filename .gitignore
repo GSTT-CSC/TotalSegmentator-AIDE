@@ -140,3 +140,11 @@ dmypy.json
 
 # Mac
 .DS_Store
+
+# Do not ignore test data - nb: *.filetype so .DS_Store files remain ignored
+!/tests/data/dcm2nii/dcm/*.dcm
+!/tests/data/dcm2nii/nii/*.nii.gz
+!/tests/data/rtstructwriter/dcm/*.dcm
+!/tests/data/rtstructwriter/nii/*.nii.gz
+!/tests/data/rtstructwriter/nii_seg/*.nii.gz
+!/tests/data/rtstructwriter/rtstruct/*.dcm
