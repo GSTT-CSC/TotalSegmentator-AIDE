@@ -52,7 +52,6 @@ scikit-learn==1.2.0
 scipy==1.9.3
 SimpleITK==2.2.1
 six==1.16.0
-sklearn==0.0.post1
 threadpoolctl==3.1.0
 tifffile==2022.10.10
 torch==1.13.1
