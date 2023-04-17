@@ -42,6 +42,24 @@ class RTStructWriterOperator(Operator):
         for idx, filename in enumerate(nii_seg_files):
             add_nii_roi_to_rtstruct(nii_seg_output_path, filename, rtstruct)
 
+        # round RT Struct ContourData to 10 d.p.
+        # TODO remove once new PyPI release of rt-utils
+        logging.info(f"Rounding ContourData values to 10 d.p. ...")
+
+        # loop over ROIs in rtstruct (1 per TotalSegmentator region)
+        for roi_idx in range(0, len(rtstruct.ds.ROIContourSequence)):
+            # if ROI has contours
+            if len(rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence) > 0:
+                # loop over the contours within the ROI
+                for cs_idx in range(0, len(rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence)):
+                    # contour_data_list = []  # for debugging
+                    # loop over the ContourData list
+                    for idx, c in enumerate(rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence[cs_idx].ContourData):
+                        # contour_data_list.append(decimal_check(c, 10))
+                        if decimal_check(c, 10) is True:
+                            rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence[cs_idx].ContourData[idx] = round(c, 10)
+        logging.info(f"Rounding ContourData values complete ...")
+
         # save RT Struct
         rtstruct.save(os.path.join(dcm_output_path, rt_struct_output_filename))
 
@@ -86,6 +104,22 @@ def add_nii_roi_to_rtstruct(nii_seg_path, nii_filename, rtstruct):
         mask=nii_img,
         name=seg_name
     )
+
+
+def decimal_check(num, dec_places):
+    """
+    Check if number has more than N decimal places
+    :param num: Input number to check
+    :param dec_places: Number of decimal places to check
+    :return: True/False
+
+    # TODO remove once new PyPI release of rt-utils
+    """
+    dec_len = len(str(num).split(".")[1])
+    if dec_len > dec_places:
+        return True
+    elif dec_len <= dec_places:
+        return False
 
 
 def list_nii_files(nii_seg_output_path):
