@@ -15,6 +15,7 @@ from monai.deploy.core import Application, resource
 from operators.dcm2nii_operator import Dcm2NiiOperator
 from operators.rtstructwriter_operator import RTStructWriterOperator
 from operators.totalsegmentator_operator import TotalSegmentatorOperator
+from operators.clinrev_pdf_operator import ClinicalReviewPDFGenerator
 
 
 @resource(cpu=1, gpu=1, memory="32Gi")
@@ -43,9 +44,14 @@ class TotalSegmentatorApp(Application):
         custom_tags = {"SeriesDescription": "AI generated image, not for clinical use."}
         rtstructwriter_op = RTStructWriterOperator(custom_tags=custom_tags)
 
+        # PDF generator
+        pdf_generator = ClinicalReviewPDFGenerator()
+
         # Operator pipeline
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"input_files": "input_files"})
         self.add_flow(totalsegmentator_op, rtstructwriter_op, {"input_files": "input_files"})
+
+        self.add_flow(totalsegmentator_op, pdf_generator, {"input_files": "input_files"})
 
         logging.info(f"End {self.compose.__name__}")
 
