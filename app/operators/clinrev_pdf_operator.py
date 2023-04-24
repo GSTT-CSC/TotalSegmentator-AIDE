@@ -1,14 +1,16 @@
 # Clinical Review PDF generator
+import monai.deploy as md
 from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
 import logging
 import os.path
 from os import listdir
 from os.path import isfile, join
 
+
 @md.intput("dicom_files", DataPath, IOType.DISK)
-@md.output("pdf_file"), DataPath, IOType.DISK)
+@md.output("pdf_file", DataPath, IOType.DISK)
 class ClinicalReviewPDFGenerator(Operator):
-    """Generates a DICOM encapssulated PDF with Sag/Cor/Ax views for each structure"""
+    """Generates a DICOM encapsulated PDF with Sag/Cor/Ax views for each structure"""
 
     def compute(self):
         logging.info(f"Begin {self.compute.__name__}")
