@@ -33,6 +33,8 @@ opencv-python==4.7.0.68
 p-tqdm==1.4.0
 packaging==22.0
 pandas==1.5.2
+pathlib
+nilearn
 pathos==0.3.0
 Pillow==9.3.0
 pox==0.3.2
@@ -67,3 +69,4 @@ vtk==9.2.2
 wslink==1.10.0
 xvfbwrapper==0.2.9
 yarl==1.8.2
+reportlab
