@@ -11,6 +11,8 @@
 import logging
 
 from monai.deploy.core import Application, resource
+from monai.deploy.operators.dicom_utils import ModelInfo
+from monai.deploy.operators import DICOMEncapsulatedPDFWriterOperator
 
 from operators.dcm2nii_operator import Dcm2NiiOperator
 from operators.rtstructwriter_operator import RTStructWriterOperator
@@ -47,11 +49,17 @@ class TotalSegmentatorApp(Application):
         # PDF generator
         pdf_generator = ClinicalReviewPDFGenerator()
 
+        # Dicom Encapsulation
+        model_info = ModelInfo(creator="", name="", version="", uid="")
+        dicom_encapsulation = DICOMEncapsulatedPDFWriterOperator(copy_tags=True, model_info=model_info)
+
         # Operator pipeline
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"input_files": "input_files"})
         self.add_flow(totalsegmentator_op, rtstructwriter_op, {"input_files": "input_files"})
 
         self.add_flow(totalsegmentator_op, pdf_generator, {"input_files": "input_files"})
+
+        self.add_flow(pdf_generator, dicom_encapsulation, {"pdf_file": "pdf_file"})
 
         logging.info(f"End {self.compose.__name__}")
 
