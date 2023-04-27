@@ -68,21 +68,23 @@ class ClinicalReviewPDFGenerator(Operator):
         pdf_output_path = input_path / 'pdf'
         Path(pdf_output_path).mkdir(parents=True, exist_ok=True)
 
-        img_path = self.create_images_for_contours(dcm_meta=dcm_meta,
-                                                   output_path=pdf_output_path,
-                                                   ct_nifti_filename=ct_nifti,
-                                                   masks=nii_filenames)
+        ax_img_path, sag_img_path, cor_img_path = self.create_images_for_contours(dcm_meta=dcm_meta,
+                                                                                  output_path=pdf_output_path,
+                                                                                  ct_nifti_filename=ct_nifti,
+                                                                                  masks=nii_filenames)
 
         pdf_filename = self.generate_report_pdf(dcm_meta,
-                                                image_path=img_path,
                                                 output_path=pdf_output_path,
+                                                ax_img_path=ax_img_path,
+                                                sag_img_path=sag_img_path,
+                                                cor_img_path=cor_img_path,
                                                 nii_filenames=nii_filenames)
 
-        logging.info(f"Dicom Encapsulated PDF written to {pdf_filename}")
+        logging.info(f"DICOM Encapsulated PDF written to {pdf_filename}")
         logging.info(f"PDF creation complete ...")
         logging.info(f"End {self.compute.__name__}")
-
         op_output.set(value=DataPath(pdf_filename), label='pdf_file')
+
         return
 
     def create_images_for_contours(self, dcm_meta: pydicom.Dataset, output_path : DataPath,
@@ -94,73 +96,92 @@ class ClinicalReviewPDFGenerator(Operator):
         # Calculate aspect ratios
         ps = dcm_meta.PixelSpacing
         ss = dcm_meta.SliceThickness
-
         ax_aspect = ps[0] / ps[1]
         sag_aspect = ss / ps[1]
         cor_aspect = ss / ps[0]
 
-        logging.info(f"ax_aspect : {ax_aspect} \n sag_aspect : {sag_aspect} \n  cor_aspect : {cor_aspect} \n  ")
-
         # select midline projections
-        ax_arr = np.rot90(a[int(a.shape[0] / 2), :, :])
-        sag_arr = np.rot90(a[:, int(a.shape[1] / 2), :])
-        cor_arr = np.rot90(a[:, :, int(a.shape[2] / 2)])
+        sag_arr = np.rot90(a[int(a.shape[0] / 2), :, :])
+        cor_arr = np.rot90(a[:, int(a.shape[1] / 2), :])
+        ax_arr = np.rot90(a[:, :, int(a.shape[2] / 2)])
 
-        # display projections
-        a1 = plt.subplot(3, 1, 1)
-        plt.axis('off')
-        plt.imshow(cor_arr, cmap='gray')
-        a1.set_aspect(ax_aspect)
-
-        a2 = plt.subplot(3, 1, 2)
-        plt.axis('off')
-        plt.imshow(sag_arr, cmap='gray')
-        a2.set_aspect(sag_aspect)
-
-        a3 = plt.subplot(3, 1, 3)
-        plt.axis('off')
-        plt.imshow(ax_arr, cmap='gray')
-        a3.set_aspect(cor_aspect)
-
-        # display all contours  ------------------
-        # repeats above for all masks
-
-        max_val = len(masks)  # sets upper limit of colour scale on cmap = 'hsv'
-        alpha = 0.3  # transparency of contour
+        ax_masks = []
+        sag_masks = []
+        cor_masks = []
 
         for i, mask in enumerate(masks):
             try:
-                logging.info(mask)
+                logging.info('Generating masks')
                 img = nib.load(mask)
                 b = np.array(img.dataobj)
                 b = b * i  # means each mask is a different value, therefore different colour on cmap = 'hsv'
 
-                c_ax_arr = np.rot90(b[int(b.shape[0] / 2), :, :])
-                c_ax_arr_masked = np.ma.masked_where(c_ax_arr == 0, c_ax_arr)
-                c_sag_arr = np.rot90(b[:, int(b.shape[1] / 2), :])
+                c_sag_arr = np.rot90(b[int(b.shape[0] / 2), :, :])
                 c_sag_arr_masked = np.ma.masked_where(c_sag_arr == 0, c_sag_arr)
-                c_cor_arr = np.rot90(b[:, :, int(b.shape[2] / 2)])
-                c_cor_arr_masked = np.ma.masked_where(c_cor_arr == 0, c_cor_arr)
+                sag_masks.append([i, c_sag_arr_masked])
 
-                # display on separate images
-                a1 = plt.subplot(3, 1, 1)
-                plt.imshow(c_cor_arr_masked, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=max_val)
-                a1.set_aspect(ax_aspect)
-                a2 = plt.subplot(3, 1, 2)
-                plt.imshow(c_sag_arr_masked, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=max_val)
-                a2.set_aspect(sag_aspect)
-                a3 = plt.subplot(3, 1, 3)
-                plt.imshow(c_ax_arr_masked, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=max_val)
-                a3.set_aspect(cor_aspect)
+                c_cor_arr = np.rot90(b[:, int(b.shape[1] / 2), :])
+                c_cor_arr_masked = np.ma.masked_where(c_cor_arr == 0, c_cor_arr)
+                cor_masks.append([i, c_cor_arr_masked])
+
+                c_ax_arr = np.rot90(b[:, :, int(b.shape[2] / 2)])
+                c_ax_arr_masked = np.ma.masked_where(c_ax_arr == 0, c_ax_arr)
+                ax_masks.append([i, c_ax_arr_masked])
+
             except IndexError:
                 logging.info(f"failed on {i} {mask}")
                 continue
-        img_path = output_path / 'images.png'
-        plt.savefig(img_path)
 
-        return img_path
+        ax_filename = os.path.join(output_path, 'axial_image.png')
+        sag_filename = os.path.join(output_path, 'sagittal_image.png')
+        cor_filename = os.path.join(output_path, 'coronal_image.png')
+        num_masks = len(ax_masks)
+        axial_img_path = self.create_image(mask_arr=ax_masks,
+                                           ct_arr=ax_arr,
+                                           aspect=ax_aspect,
+                                           filename=ax_filename,
+                                           num_masks=num_masks)
 
-    def generate_report_pdf(self, ds_meta: pydicom.Dataset, image_path: DataPath,  output_path: DataPath, nii_filenames):
+        sagittal_img_path = self.create_image(mask_arr=sag_masks,
+                                              ct_arr=sag_arr,
+                                              aspect=sag_aspect,
+                                              filename=sag_filename,
+                                              num_masks=num_masks)
+
+        coronal_img_path = self.create_image(mask_arr=cor_masks,
+                                             ct_arr=cor_arr,
+                                             aspect=cor_aspect,
+                                             filename=cor_filename,
+                                             num_masks=num_masks)
+
+        return axial_img_path, sagittal_img_path, coronal_img_path
+
+    def create_image(self, mask_arr, ct_arr, aspect, filename, num_masks):
+        # plot CT in grayscale
+        fig1 = plt.figure()
+        ax = fig1.add_subplot(111)
+        ax.axis('off')
+        plt.imshow(ct_arr, cmap='gray')
+        ax.set_aspect(aspect)
+        alpha = 0.3
+
+        # plot contours in colours
+        for i, arr in mask_arr:
+            ax = plt.subplot(111)
+            plt.imshow(arr, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=num_masks)
+            ax.set_aspect(aspect)
+
+        plt.savefig(filename, bbox_inches="tight")
+        del ax
+        return filename
+
+    def generate_report_pdf(self,
+                            ds_meta: pydicom.Dataset,
+                            ax_img_path: DataPath,
+                            sag_img_path: DataPath,
+                            cor_img_path: DataPath,
+                            output_path: DataPath,
+                            nii_filenames):
         """
         --Test Script--
         Generates pdf report of the results. Takes a dicom image to
@@ -192,24 +213,13 @@ class ClinicalReviewPDFGenerator(Operator):
         story = []
         styles = getSampleStyleSheet()
         styleN = styles['Normal']
-        styleH1 = styles['Heading1']
         styleH2 = styles['Heading2']
-        styleH3 = ParagraphStyle(name='Heading3',
-                                 parent=styles['Normal'],
-                                 fontName=_baseFontNameB,
-                                 fontSize=12,
-                                 leading=14,
-                                 spaceBefore=12,
-                                 spaceAfter=6,
-                                 textColor=white)
-
-
-        current_dir = os.path.dirname(__file__)
 
         # Add patient info
         story.append(Paragraph("TotalSegmentator (AIDE) (v0.1)", styleH2))
+        story.append(Paragraph(" ", styleN))
         story.append(Paragraph("Auto-contouring of CT scans into RT StructureSets for"
-                               " radiotherapy treatment planning.",styleN))
+                               " radiotherapy treatment planning.", styleN))
 
         story.append(
             Paragraph("IMPORTANT DISCLAIMER: automatically generated contours must be reviewed and approved by a "
@@ -228,25 +238,41 @@ class ClinicalReviewPDFGenerator(Operator):
                          ['Study Time', xray_time],
                          ['Accession Number', accession_number]]
 
-
         img_info = pl.Table(img_info_data, None, 11 * [0.2 * inch], spaceBefore=0.1 * inch, spaceAfter=0.1 * inch)
         img_info.setStyle(pl.TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                          ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
                                          ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-                                         ('FONTSIZE', (0, 0), (2, 6), 8),
+                                         ('FONTSIZE', (0, 0), (-1, -1), 8),
                                          ]))
-
         story.append(img_info)
 
-        # Add image
-        temp = utils.ImageReader(image_path)
+        # Add axial images
+        temp = utils.ImageReader(ax_img_path)
         width = 8*cm
         iw, ih = temp.getSize()
         aspect = ih / float(iw)
+        im1 = pl.Image(ax_img_path, width=width, height=(width * aspect))
+        im1.hAlign = 'CENTRE'
 
-        im = pl.Image(image_path, width=width, height=(width * aspect))
-        im.hAlign = 'CENTRE'
-        story.append(im)
+        # Add coronal images
+        temp = utils.ImageReader(cor_img_path)
+        iw, ih = temp.getSize()
+        aspect = ih / float(iw)
+        im2 = pl.Image(cor_img_path, width=width, height=(width * aspect))
+        im2.hAlign = 'CENTRE'
+
+        # Add sag images
+        temp = utils.ImageReader(sag_img_path)
+        iw, ih = temp.getSize()
+        aspect = ih / float(iw)
+        im3 = pl.Image(sag_img_path, width=width, height=(width * aspect))
+        im3.hAlign = 'CENTRE'
+
+
+        chart_style = TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                  ('VALIGN', (0, 0), (-1, -1), 'CENTER')])
+        story.append(im1)
+        story.append(Table([[im2, im3]], style=chart_style))
 
         #  Build PDF and save
         pdf_path = output_path / "clinical_review.pdf"
