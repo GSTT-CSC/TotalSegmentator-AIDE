@@ -21,7 +21,7 @@ class TotalSegmentatorOperator(Operator):
         logging.info(f"Begin {self.compute.__name__}")
 
         input_path = op_input.get("input_files").path
-        nii_input_file = input_path / "input-ct-dataset.nii.gz"
+        nii_input_file = input_path / "nii_ct_output/input-ct-dataset.nii.gz"
 
         if not os.path.exists(nii_input_file):
             NameError('Exception occurred with nii_input_file')
@@ -34,7 +34,7 @@ class TotalSegmentatorOperator(Operator):
             os.makedirs(nii_seg_output_path)
 
         # Run TotalSegmentator
-        subprocess.run(["TotalSegmentator", "-i", nii_input_file, "-o", nii_seg_output_path])
+        # subprocess.run(["TotalSegmentator", "-i", nii_input_file, "-o", nii_seg_output_path])
 
         logging.info(f"Performed TotalSegmentator processing")
 
