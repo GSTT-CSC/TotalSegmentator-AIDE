@@ -13,7 +13,8 @@ import logging
 from monai.deploy.core import Application, resource
 from monai.deploy.operators.dicom_utils import ModelInfo
 from monai.deploy.operators import DICOMEncapsulatedPDFWriterOperator
-
+from monai.deploy.operators import DICOMSeriesSelectorOperator
+from monai.deploy.operators import DICOMDataLoaderOperator
 from operators.dcm2nii_operator import Dcm2NiiOperator
 from operators.rtstructwriter_operator import RTStructWriterOperator
 from operators.totalsegmentator_operator import TotalSegmentatorOperator
@@ -36,6 +37,10 @@ class TotalSegmentatorApp(Application):
 
         logging.info(f"Begin {self.compose.__name__}")
 
+        loader = DICOMDataLoaderOperator()
+
+        selector = DICOMSeriesSelectorOperator(rules=Rules_Text, all_matched=True)
+
         # DICOM to NIfTI operator
         dcm2nii_op = Dcm2NiiOperator()
 
@@ -57,12 +62,27 @@ class TotalSegmentatorApp(Application):
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"input_files": "input_files"})
         self.add_flow(totalsegmentator_op, rtstructwriter_op, {"input_files": "input_files"})
 
+        self.add_flow(loader, selector, {"dicom_study_list": "dicom_study_list"})
+
         self.add_flow(totalsegmentator_op, pdf_generator, {"input_files": "input_files"})
 
+        self.add_flow(selector, dicom_encapsulation, {"study_selected_series_list": "study_selected_series_list"})
         self.add_flow(pdf_generator, dicom_encapsulation, {"pdf_file": "pdf_file"})
 
         logging.info(f"End {self.compose.__name__}")
 
+Rules_Text = """
+{
+    "selections": [
+        {
+            "name": "CT Series",
+            "conditions": {
+                "Modality": "CT"
+            }
+        }
+    ]
+}
+"""
 
 if __name__ == "__main__":
     TotalSegmentatorApp(do_run=True)
