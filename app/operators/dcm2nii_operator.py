@@ -10,7 +10,6 @@ from pathlib import Path
 import monai.deploy.core as md
 from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
 
-
 @md.input("input_files", DataPath, IOType.DISK)
 @md.output("input_files", DataPath, IOType.DISK)
 @md.env(pip_packages=["pydicom >= 2.3.0", "highdicom >= 0.18.2"])
@@ -40,11 +39,16 @@ class Dcm2NiiOperator(Operator):
         for f in input_files:
             shutil.move(os.path.join(input_path, f), dcm_input_path)
 
+        # create output directory for input-ct-dataset.nii.gz
+        dcm_output_path = os.path.join(input_path, 'nii_ct_output')
+        if not os.path.exists(dcm_output_path):
+            os.makedirs(dcm_output_path)
+
         # Run dcm2niix
-        subprocess.run(["dcm2niix", "-z", "y", "-o", input_path, "-f", "input-ct-dataset", dcm_input_path])
+        # subprocess.run(["dcm2niix", "-z", "y", "-o", dcm_output_path, "-f", "input-ct-dataset", dcm_output_path])
 
         # Delete superfluous .json files
-        json_files = glob.glob(input_path + "/*.json")
+        json_files = glob.glob(dcm_output_path + "/*.json")
         for json_file in json_files:
             os.remove(json_file)
 
