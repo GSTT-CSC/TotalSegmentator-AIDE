@@ -207,24 +207,20 @@ class ClinicalReviewPDFGenerator(Operator):
         current_dir = os.path.dirname(__file__)
 
         # Add patient info
-        story.append(Paragraph("TotalSegmentator (AIDE) (v0.1)", styleH1))
-        story.append(Paragraph("Auto-contouring of CT scans into RT StructureSets for radiotherapy treatment planning.", styleN))
-        story.append(Paragraph(f"Patient Name: {patient_name}", styleH2))
-        story.append(Paragraph(f"DOB: {dob} ", styleH2))
-        story.append(Paragraph(f"PatientID: {pat_id} ", styleH2))
-        story.append(Paragraph(f"Sex: {sex} ", styleH2))
+        story.append(Paragraph("TotalSegmentator (AIDE) (v0.1)", styleH2))
+        story.append(Paragraph("Auto-contouring of CT scans into RT StructureSets for"
+                               " radiotherapy treatment planning.",styleN))
 
-
-        # Add disclaimer
         story.append(
             Paragraph("IMPORTANT DISCLAIMER: automatically generated contours must be reviewed and approved by a "
                       "radiation oncologist before use within RT planning.",
-                      styleH2))
+                      styleN))
 
-        # Add image info
-        story.append(Paragraph("Image used for analysis:", styleN))
-
-        img_info_data = [['Referring physician', consultant],
+        img_info_data = [['Patient Name', patient_name],
+                         ['DOB', dob],
+                         ['PatientID', pat_id],
+                         ['Sex', sex],
+                         ['Referring Consultant', consultant],
                          ['Study description', study_description],
                          ['Series description', series_description],
                          ['Series UID', series_uid],
@@ -233,7 +229,7 @@ class ClinicalReviewPDFGenerator(Operator):
                          ['Accession Number', accession_number]]
 
 
-        img_info = pl.Table(img_info_data, None, 7 * [0.2 * inch], spaceBefore=0.1 * inch, spaceAfter=0.1 * inch)
+        img_info = pl.Table(img_info_data, None, 11 * [0.2 * inch], spaceBefore=0.1 * inch, spaceAfter=0.1 * inch)
         img_info.setStyle(pl.TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                          ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
                                          ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
@@ -244,7 +240,7 @@ class ClinicalReviewPDFGenerator(Operator):
 
         # Add image
         temp = utils.ImageReader(image_path)
-        width = 20*cm
+        width = 8*cm
         iw, ih = temp.getSize()
         aspect = ih / float(iw)
 
