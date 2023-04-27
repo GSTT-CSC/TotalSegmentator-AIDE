@@ -5,9 +5,10 @@ import os.path
 import matplotlib.pyplot as plt
 import numpy as np
 import nibabel as nib
+from monai.deploy.core.domain import DataPath
+from pathlib import Path
 
 """ Test script to generate view"""
-
 
 def add_masks():
     # read in ct nifti and create masks list
@@ -17,7 +18,6 @@ def add_masks():
                                stop_before_pixels=True)
 
     masks = [os.path.join(mask_path_dir, f) for f in os.listdir(mask_path_dir) if '.nii' in f]
-
     img = nib.load(ct_nifti_filename)
     a = np.array(img.dataobj)
 
@@ -29,34 +29,15 @@ def add_masks():
     sag_aspect = ss / ps[1]
     cor_aspect = ss / ps[0]
 
-    print(f"ax_aspect : {ax_aspect} \n sag_aspect : {sag_aspect} \n  cor_aspect : {cor_aspect} \n  ")
-
     # select midline projections
-    ax_arr = np.rot90(a[int(a.shape[0] / 2), :, :])
-    sag_arr = np.rot90(a[:, int(a.shape[1] / 2), :])
-    cor_arr = np.rot90(a[:, :, int(a.shape[2] / 2)])
+    sag_arr = np.rot90(a[int(a.shape[0] / 2), :, :])
+    cor_arr = np.rot90(a[:, int(a.shape[1] / 2), :])
+    ax_arr = np.rot90(a[:, :, int(a.shape[2] / 2)])
 
-    # display projections
-    a1 = plt.subplot(3, 1, 1)
-    plt.axis('off')
-    plt.imshow(cor_arr, cmap='gray')
-    a1.set_aspect(ax_aspect)
+    ax_masks = []
+    sag_masks = []
+    cor_masks = []
 
-    a2 = plt.subplot(3, 1, 2)
-    plt.axis('off')
-    plt.imshow(sag_arr, cmap='gray')
-    a2.set_aspect(sag_aspect)
-
-    a3 = plt.subplot(3,1, 3)
-    plt.axis('off')
-    plt.imshow(ax_arr, cmap='gray')
-    a3.set_aspect(cor_aspect)
-
-    # display all contours  ------------------
-    # repeats above for all masks
-
-    max_val = len(masks)    # sets upper limit of colour scale on cmap = 'hsv'
-    alpha = 0.3             # transparency of contour
 
     for i, mask in enumerate(masks):
         try:
@@ -65,29 +46,76 @@ def add_masks():
             b = np.array(img.dataobj)
             b = b * i        # means each mask is a different value, therefore different colour on cmap = 'hsv'
 
-            c_ax_arr = np.rot90(b[int(b.shape[0] / 2), :, :])
-            c_ax_arr_masked = np.ma.masked_where(c_ax_arr == 0, c_ax_arr)
-            c_sag_arr = np.rot90(b[:, int(b.shape[1] / 2), :])
+            c_sag_arr = np.rot90(b[int(b.shape[0] / 2), :, :])
             c_sag_arr_masked = np.ma.masked_where(c_sag_arr == 0, c_sag_arr)
-            c_cor_arr = np.rot90(b[:, :, int(b.shape[2] / 2)])
+            sag_masks.append([i, c_sag_arr_masked])
+
+            c_cor_arr = np.rot90(b[:, int(b.shape[1] / 2), :])
             c_cor_arr_masked = np.ma.masked_where(c_cor_arr == 0, c_cor_arr)
+            cor_masks.append([i, c_cor_arr_masked])
+
+            c_ax_arr = np.rot90(b[:, :, int(b.shape[2] / 2)])
+            c_ax_arr_masked = np.ma.masked_where(c_ax_arr == 0, c_ax_arr)
+            ax_masks.append([i, c_ax_arr_masked])
 
             # display on separate images
-            a1 = plt.subplot(3, 1, 1)
+            """ax = plt.subplot(111)
             plt.imshow(c_cor_arr_masked, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=max_val)
-            a1.set_aspect(ax_aspect)
+            ax.set_aspect(ax_aspect)
             a2 = plt.subplot(3, 1, 2)
             plt.imshow(c_sag_arr_masked, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=max_val)
             a2.set_aspect(sag_aspect)
             a3 = plt.subplot(3, 1, 3)
             plt.imshow(c_ax_arr_masked, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=max_val)
-            a3.set_aspect(cor_aspect)
+            a3.set_aspect(cor_aspect)"""
 
         except IndexError:
             print(f"failed on {i} {mask}")
             continue
-    plt.show()
-    plt.savefig('images.png')
+
+    def create_image(mask_arr, ct_arr, aspect, filename):
+        #plot CT
+        fig1 = plt.figure()
+        ax = fig1.add_subplot(111)
+        ax.axis('off')
+        plt.imshow(ct_arr, cmap='gray')
+        ax.set_aspect(aspect)
+
+        max_val = len(masks)  # sets upper limit of colour scale on cmap = 'hsv'
+        alpha = 0.3
+        # plot contours
+        for i, arr in mask_arr:
+            ax = plt.subplot(111)
+            plt.imshow(arr, cmap='hsv', alpha=alpha, interpolation='none', vmin=0, vmax=max_val)
+            ax.set_aspect(aspect)
+
+        plt.savefig(filename)
+        del ax
+        return filename
+
+    data_path = "/Users/anil/Documents/GitHub/TotalSegmentator-AIDE/app/notebook"
+    ax_filename = os.path.join(data_path, 'axial_image.png')
+    sag_filename = os.path.join(data_path,'sagittal_image.png')
+    cor_filename = os.path.join(data_path,'coronal_image.png')
+
+    axial_img_path = create_image(mask_arr=ax_masks,
+                                  ct_arr=ax_arr,
+                                  aspect=ax_aspect,
+                                  filename=ax_filename)
+
+    sagittal_img_path = create_image(mask_arr=sag_masks,
+                                     ct_arr=sag_arr,
+                                     aspect=sag_aspect,
+                                     filename=sag_filename)
+
+    coronal_img_path = create_image(mask_arr=cor_masks,
+                                    ct_arr=cor_arr,
+                                    aspect=cor_aspect,
+                                    filename=cor_filename)
+
+    return axial_img_path, sagittal_img_path, coronal_img_path
+
 
 if __name__ == "__main__":
-    add_masks()
+    ax, sag, corr = add_masks()
+    print(f"ax: {ax} \nsag: {sag} \ncor: {corr}")
