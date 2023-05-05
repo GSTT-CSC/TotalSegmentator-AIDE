@@ -51,7 +51,7 @@ class Dcm2NiiOperator(Operator):
         # Set output path for next operator
         op_output.set(DataPath(input_path))
 
-        logging.info(f"Performed dcm2niix conversion")
+        logging.info("Performed dcm2niix conversion")
 
         logging.info(f"End {self.compute.__name__}")
 

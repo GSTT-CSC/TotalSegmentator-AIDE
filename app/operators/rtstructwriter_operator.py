@@ -33,7 +33,7 @@ class RTStructWriterOperator(Operator):
 
         nii_seg_files = list_nii_files(nii_seg_output_path)
 
-        logging.info(f"Creating RT Struct ...")
+        logging.info("Creating RT Struct ...")
 
         # create new RT Struct - requires original DICOM
         rtstruct = RTStructBuilder.create_new(dicom_series_path=dcm_input_path)
@@ -44,7 +44,7 @@ class RTStructWriterOperator(Operator):
 
         # round RT Struct ContourData to 10 d.p.
         # TODO remove once new PyPI release of rt-utils
-        logging.info(f"Rounding ContourData values to 10 d.p. ...")
+        logging.info("Rounding ContourData values to 10 d.p. ...")
 
         # loop over ROIs in rtstruct (1 per TotalSegmentator region)
         for roi_idx in range(0, len(rtstruct.ds.ROIContourSequence)):
@@ -58,14 +58,14 @@ class RTStructWriterOperator(Operator):
                         # contour_data_list.append(decimal_check(c, 10))
                         if decimal_check(c, 10) is True:
                             rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence[cs_idx].ContourData[idx] = round(c, 10)
-        logging.info(f"Rounding ContourData values complete ...")
+        logging.info("Rounding ContourData values complete ...")
 
         # save RT Struct
         rtstruct.save(os.path.join(dcm_output_path, rt_struct_output_filename))
 
         logging.info(f"RT Struct written to {os.path.join(dcm_output_path, rt_struct_output_filename)}")
 
-        logging.info(f"RT Struct creation complete ...")
+        logging.info("RT Struct creation complete ...")
 
         logging.info(f"End {self.compute.__name__}")
 
