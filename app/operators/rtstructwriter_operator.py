@@ -55,7 +55,7 @@ class RTStructWriterOperator(Operator):
                     # contour_data_list = []  # for debugging
                     # loop over the ContourData list
                     for idx, c in enumerate(rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence[cs_idx].ContourData):
-                        # contour_data_list.append(decimal_check(c, 10))
+                        # contour_data_list.append(decimal_check(c, 10))  # for debugging
                         if decimal_check(c, 10) is True:
                             rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence[cs_idx].ContourData[idx] = round(c, 10)
         logging.info("Rounding ContourData values complete ...")
