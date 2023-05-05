@@ -27,7 +27,7 @@ multidict==6.0.4
 multiprocess==0.70.14
 networkx==2.8.8
 nibabel==4.0.2
-nnunet-customized==1.1
+nnunet-customized==1.2
 numpy==1.24.1
 opencv-python==4.7.0.68
 p-tqdm==1.4.0
@@ -52,11 +52,10 @@ scikit-learn==1.2.0
 scipy==1.9.3
 SimpleITK==2.2.1
 six==1.16.0
-sklearn==0.0.post1
 threadpoolctl==3.1.0
 tifffile==2022.10.10
 torch==1.13.1
-TotalSegmentator==1.1
+TotalSegmentator==1.5.5
 tqdm==4.64.1
 traceback2==1.4.0
 typeguard==2.13.3
