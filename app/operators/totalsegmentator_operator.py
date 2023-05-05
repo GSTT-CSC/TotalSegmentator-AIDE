@@ -36,7 +36,7 @@ class TotalSegmentatorOperator(Operator):
         # Run TotalSegmentator
         # subprocess.run(["TotalSegmentator", "-i", nii_input_file, "-o", nii_seg_output_path])
 
-        logging.info(f"Performed TotalSegmentator processing")
+        logging.info("Performed TotalSegmentator processing")
 
         # Set output path for next operator
         op_output.set(DataPath(input_path))  # cludge to avoid op_output not exist error
