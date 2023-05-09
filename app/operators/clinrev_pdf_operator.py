@@ -44,11 +44,11 @@ class ClinicalReviewPDFGenerator(Operator):
         # get list of masks
         input_path = op_input.get("input_files").path
         dcm_input_path = input_path / 'dcm_input'
-        nii_seg_output_path = dcm_input_path / 'nii_seg_output'
+        nii_seg_output_path = input_path / 'nii_seg_output'
         nii_filenames = [join(nii_seg_output_path, f) for f in listdir(nii_seg_output_path) if
                          isfile(join(nii_seg_output_path, f)) and '.nii' in f]
 
-        ct_nifti = dcm_input_path / 'input-ct-dataset.nii.gz'
+        ct_nifti = input_path / 'nii_ct_output' / 'input-ct-dataset.nii.gz'
 
         logging.info(f"Creating PDF  ...")
 
