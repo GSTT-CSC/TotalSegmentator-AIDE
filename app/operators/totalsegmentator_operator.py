@@ -42,7 +42,7 @@ class TotalSegmentatorOperator(Operator):
         # for file in os.listdir(src):
         #    shutil.copy2(os.path.join(src, file), nii_seg_output_path)
 
-        logging.info(f"Performed TotalSegmentator processing")
+        logging.info("Performed TotalSegmentator processing")
 
         # Set output path for next operator
         op_output.set(DataPath(input_path))  # cludge to avoid op_output not exist error
