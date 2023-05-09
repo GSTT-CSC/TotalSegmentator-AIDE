@@ -45,7 +45,15 @@ class Dcm2NiiOperator(Operator):
             os.makedirs(dcm_output_path)
 
         # Run dcm2niix
-        # subprocess.run(["dcm2niix", "-z", "y", "-o", dcm_output_path, "-f", "input-ct-dataset", dcm_output_path])
+        subprocess.run(["dcm2niix", "-z", "y", "-o", dcm_output_path, "-f", "input-ct-dataset", dcm_output_path])
+
+        # ---------
+        # Local testing - copy input-ct-dataset.nii.gz from another folder, e.g. local_files in repo root
+        # (hardcode this yourself)
+
+        # shutil.copyfile('../../local_files/input-ct-dataset.nii.gz',
+        #               os.path.join(dcm_output_path, 'input-ct-dataset.nii.gz'))
+        # ---------
 
         # Delete superfluous .json files
         json_files = glob.glob(dcm_output_path + "/*.json")
