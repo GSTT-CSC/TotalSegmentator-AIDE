@@ -1,10 +1,7 @@
 # Clinical Review PDF generator
-import monai.deploy.core as md
+
 import pydicom
-from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
 import logging
-import nilearn
-import pathlib
 import os.path
 from os import listdir
 from os.path import isfile, join
@@ -13,26 +10,19 @@ import os.path
 import monai.deploy.core as md
 from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
 from monai.deploy.core.domain.dicom_series_selection import StudySelectedSeries
-from monai.deploy.core.domain import DICOMStudy
-from monai.deploy.core.domain.dicom_sop_instance import DICOMSOPInstance
 from pathlib import Path
-import SimpleITK as sitk
-
 import matplotlib.pyplot as plt
 import numpy as np
 import nibabel as nib
-
-from typing import TYPE_CHECKING, Dict, List, Optional, Sequence
-import reportlab.platypus as pl # import Table, TableStyle, Image
-from reportlab.platypus import Table, TableStyle, Image
+from typing import List
+import reportlab.platypus as pl  # import Table, TableStyle, Image
+from reportlab.platypus import Table, TableStyle
 from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, KeepInFrame
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch, cm
 from reportlab.lib import utils
-
 from reportlab.lib import colors
-from reportlab.lib.colors import white, black
 from reportlab.lib.fonts import tt2ps
 from reportlab.rl_config import canvas_basefontname as _baseFontName
 _baseFontNameB = tt2ps(_baseFontName, 1, 0)
