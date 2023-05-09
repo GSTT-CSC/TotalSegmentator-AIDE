@@ -3,6 +3,7 @@
 import logging
 import os
 import subprocess
+import shutil
 
 import monai.deploy.core as md
 from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
@@ -34,7 +35,12 @@ class TotalSegmentatorOperator(Operator):
             os.makedirs(nii_seg_output_path)
 
         # Run TotalSegmentator
-        # subprocess.run(["TotalSegmentator", "-i", nii_input_file, "-o", nii_seg_output_path])
+        subprocess.run(["TotalSegmentator", "-i", nii_input_file, "-o", nii_seg_output_path])
+
+        # Local testing - copy from local_files directory e.g. local_files in repo root (hardcode this yourself)
+        # src = '../../local_files/nii_seg_output'
+        # for file in os.listdir(src):
+        #    shutil.copy2(os.path.join(src, file), nii_seg_output_path)
 
         logging.info(f"Performed TotalSegmentator processing")
 
