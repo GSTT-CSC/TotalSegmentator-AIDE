@@ -17,7 +17,7 @@ import nibabel as nib
 from typing import List
 import reportlab.platypus as pl  # import Table, TableStyle, Image
 from reportlab.platypus import Table, TableStyle
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch, cm
@@ -35,24 +35,24 @@ _baseFontNameBI = tt2ps(_baseFontName, 1, 1)
 @md.output("study_selected_series", List[StudySelectedSeries], IOType.IN_MEMORY)
 @md.env(pip_packages=["pydicom >= 2.3.0", "highdicom >= 0.18.2"])
 class ClinicalReviewPDFGenerator(Operator):
-
-    """Generates a PDF with Sag/Cor/Ax views for each structure"""
+    """
+    Generates a PDF with Sag/Cor/Ax views for each structure
+    """
 
     def compute(self, op_input: InputContext, op_output: OutputContext, context: ExecutionContext):
 
         logging.info(f"Begin {self.compute.__name__}")
+
         # get list of masks
         input_path = op_input.get("input_files").path
         dcm_input_path = input_path / 'dcm_input'
         nii_seg_output_path = input_path / 'nii_seg_output'
         nii_filenames = [join(nii_seg_output_path, f) for f in listdir(nii_seg_output_path) if
                          isfile(join(nii_seg_output_path, f)) and '.nii' in f]
-
         ct_nifti = input_path / 'nii_ct_output' / 'input-ct-dataset.nii.gz'
 
-        logging.info(f"Creating PDF  ...")
-
         # Get example CT dicom, get images and generate report
+        logging.info(f"Creating PDF  ...")
         example_ct_file = [os.path.join(dcm_input_path, f) for f in os.listdir(dcm_input_path) if '.dcm' in f][0]
         dcm_meta = pydicom.dcmread(example_ct_file, stop_before_pixels=True)
         pdf_output_path = input_path / 'pdf'
@@ -67,21 +67,18 @@ class ClinicalReviewPDFGenerator(Operator):
                                                 output_path=pdf_output_path,
                                                 ax_img_path=ax_img_path,
                                                 sag_img_path=sag_img_path,
-                                                cor_img_path=cor_img_path,
-                                                nii_filenames=nii_filenames)
+                                                cor_img_path=cor_img_path)
 
         logging.info(f"DICOM Encapsulated PDF written to {pdf_filename}")
         logging.info(f"PDF creation complete ...")
         logging.info(f"End {self.compute.__name__}")
         op_output.set(value=DataPath(pdf_filename), label='pdf_file')
 
-        return
+    def create_images_for_contours(self, dcm_meta: pydicom.Dataset, output_path: DataPath,
+                                   ct_nifti_filename: DataPath, masks: List):
 
-    def create_images_for_contours(self, dcm_meta: pydicom.Dataset, output_path : DataPath,
-                                   ct_nifti_filename: DataPath, masks : List):
-
-        img = nib.load(ct_nifti_filename)
-        a = np.array(img.dataobj)
+        ct_img = nib.load(ct_nifti_filename)
+        a = np.array(ct_img.dataobj)
 
         # Calculate aspect ratios
         ps = dcm_meta.PixelSpacing
@@ -98,10 +95,9 @@ class ClinicalReviewPDFGenerator(Operator):
         ax_masks = []
         sag_masks = []
         cor_masks = []
-
+        logging.info('Generating masks')
         for i, mask in enumerate(masks):
             try:
-                logging.info('Generating masks')
                 img = nib.load(mask)
                 b = np.array(img.dataobj)
                 b = b * i  # means each mask is a different value, therefore different colour on cmap = 'hsv'
@@ -122,9 +118,9 @@ class ClinicalReviewPDFGenerator(Operator):
                 logging.info(f"failed on {i} {mask}")
                 continue
 
-        ax_filename = os.path.join(output_path, 'axial_image.png')
-        sag_filename = os.path.join(output_path, 'sagittal_image.png')
-        cor_filename = os.path.join(output_path, 'coronal_image.png')
+        ax_filename = output_path / 'axial_image.png'
+        sag_filename = output_path / 'sagittal_image.png'
+        cor_filename = output_path / 'coronal_image.png'
         num_masks = len(ax_masks)
         axial_img_path = self.create_image(mask_arr=ax_masks,
                                            ct_arr=ax_arr,
@@ -146,7 +142,8 @@ class ClinicalReviewPDFGenerator(Operator):
 
         return axial_img_path, sagittal_img_path, coronal_img_path
 
-    def create_image(self, mask_arr, ct_arr, aspect, filename, num_masks):
+    @staticmethod
+    def create_image(mask_arr, ct_arr, aspect, filename, num_masks):
         # plot CT in grayscale
         fig1 = plt.figure()
         ax = fig1.add_subplot(111)
@@ -165,13 +162,13 @@ class ClinicalReviewPDFGenerator(Operator):
         del ax
         return filename
 
-    def generate_report_pdf(self,
-                            ds_meta: pydicom.Dataset,
+    @staticmethod
+    def generate_report_pdf(ds_meta: pydicom.Dataset,
                             ax_img_path: DataPath,
                             sag_img_path: DataPath,
                             cor_img_path: DataPath,
                             output_path: DataPath,
-                            nii_filenames):
+                            ):
         """
         --Test Script--
         Generates pdf report of the results. Takes a dicom image to
@@ -257,7 +254,6 @@ class ClinicalReviewPDFGenerator(Operator):
         aspect = ih / float(iw)
         im3 = pl.Image(sag_img_path, width=width, height=(width * aspect))
         im3.hAlign = 'CENTRE'
-
 
         chart_style = TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                   ('VALIGN', (0, 0), (-1, -1), 'CENTER')])
