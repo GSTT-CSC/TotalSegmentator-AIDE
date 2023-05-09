@@ -38,7 +38,6 @@ class TotalSegmentatorApp(Application):
         logging.info(f"Begin {self.compose.__name__}")
 
         loader = DICOMDataLoaderOperator()
-
         selector = DICOMSeriesSelectorOperator(rules=Rules_Text, all_matched=True)
 
         # DICOM to NIfTI operator
@@ -54,18 +53,16 @@ class TotalSegmentatorApp(Application):
         # PDF generator
         pdf_generator = ClinicalReviewPDFGenerator()
 
-        # Dicom Encapsulation
+        # Dicom encapsulation
         model_info = ModelInfo(creator="", name="", version="", uid="")
         dicom_encapsulation = DICOMEncapsulatedPDFWriterOperator(copy_tags=True, model_info=model_info)
 
         # Operator pipeline
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"input_files": "input_files"})
         self.add_flow(totalsegmentator_op, rtstructwriter_op, {"input_files": "input_files"})
-
-        self.add_flow(loader, selector, {"dicom_study_list": "dicom_study_list"})
-
         self.add_flow(totalsegmentator_op, pdf_generator, {"input_files": "input_files"})
 
+        self.add_flow(loader, selector, {"dicom_study_list": "dicom_study_list"})
         self.add_flow(selector, dicom_encapsulation, {"study_selected_series_list": "study_selected_series_list"})
         self.add_flow(pdf_generator, dicom_encapsulation, {"pdf_file": "pdf_file"})
 
