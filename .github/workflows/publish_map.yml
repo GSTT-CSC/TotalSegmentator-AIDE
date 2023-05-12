@@ -41,11 +41,15 @@ jobs:
 
     - name: Initial packaging of MAP-init
       run: |
-        monai-deploy package app --tag map-init -l DEBUG
+        monai-deploy package app --tag map/init:temp -l DEBUG
 
     - name: Package 3rd-party software into MAP
       run: |
-        docker build --build-arg INIT_CONTAINER=map-init -t map app
+        docker build --build-arg INIT_CONTAINER=map-init -t map/final:temp app
+
+    - name: Show Docker images
+      run: |
+        docker images
 
     - name: Test MAP end-to-end
       run: |
