@@ -45,7 +45,7 @@ jobs:
 
     - name: Package 3rd-party software into MAP
       run: |
-        docker build --build-arg INIT_CONTAINER=map-init -t map/final:temp app
+        docker build --build-arg INIT_CONTAINER=map/init:temp -t map/final:temp app
 
     - name: Show Docker images
       run: |
