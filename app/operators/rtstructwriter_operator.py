@@ -4,16 +4,15 @@ import logging
 import os.path
 from os import listdir
 from os.path import isfile, join
-
 import nibabel as nib
 import numpy as np
 from rt_utils import RTStructBuilder
-
 import monai.deploy.core as md
 from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
 
 
-@md.input("input_files", DataPath, IOType.DISK)
+@md.input("nii_seg_output_path", DataPath, IOType.DISK)
+@md.input("dcm_input", DataPath, IOType.DISK)
 @md.output("dicom_files", DataPath, IOType.DISK)
 @md.env(pip_packages=["pydicom >= 2.3.0", "rt-utils >= 1.2.7"])
 class RTStructWriterOperator(Operator):
@@ -25,17 +24,17 @@ class RTStructWriterOperator(Operator):
 
         logging.info(f"Begin {self.compute.__name__}")
 
-        input_path = op_input.get("input_files").path
-        dcm_input_path = input_path / 'dcm_input'
-        nii_seg_output_path = input_path / 'nii_seg_output'
+        # Gather inputs
+        dcm_input_path = op_input.get("dcm_input").path
+
+        nii_seg_output_path = op_input.get("nii_seg_output_path").path
+        nii_seg_files = list_nii_files(nii_seg_output_path)
+
         dcm_output_path = op_output.get().path
         rt_struct_output_filename = 'output-rt-struct.dcm'
 
-        nii_seg_files = list_nii_files(nii_seg_output_path)
-
-        logging.info("Creating RT Struct ...")
-
         # create new RT Struct - requires original DICOM
+        logging.info("Creating RT Struct ...")
         rtstruct = RTStructBuilder.create_new(dicom_series_path=dcm_input_path)
 
         # add TotalSegmentator segmentations to RT Struct
@@ -63,10 +62,9 @@ class RTStructWriterOperator(Operator):
         # save RT Struct
         rtstruct.save(os.path.join(dcm_output_path, rt_struct_output_filename))
 
+        # Log off
         logging.info(f"RT Struct written to {os.path.join(dcm_output_path, rt_struct_output_filename)}")
-
         logging.info("RT Struct creation complete ...")
-
         logging.info(f"End {self.compute.__name__}")
 
 

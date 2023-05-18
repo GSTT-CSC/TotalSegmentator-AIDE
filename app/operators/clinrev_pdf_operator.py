@@ -2,11 +2,10 @@
 
 import pydicom
 import logging
+import os
 import os.path
 from os import listdir
 from os.path import isfile, join
-import os
-import os.path
 import monai.deploy.core as md
 from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
 from monai.deploy.core.domain.dicom_series_selection import StudySelectedSeries
@@ -21,8 +20,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch, cm
-from reportlab.lib import utils
-from reportlab.lib import colors
+from reportlab.lib import utils, colors
 from reportlab.lib.fonts import tt2ps
 from reportlab.rl_config import canvas_basefontname as _baseFontName
 _baseFontNameB = tt2ps(_baseFontName, 1, 0)
@@ -30,9 +28,10 @@ _baseFontNameI = tt2ps(_baseFontName, 0, 1)
 _baseFontNameBI = tt2ps(_baseFontName, 1, 1)
 
 
-@md.input("input_files", DataPath, IOType.DISK)
+@md.input("nii_seg_output_path", DataPath, IOType.DISK)
+@md.input("study_selected_series_list", List[StudySelectedSeries], IOType.IN_MEMORY)
+@md.input("nii_ct_dataset", DataPath, IOType.DISK)
 @md.output("pdf_file", DataPath, IOType.DISK)
-@md.output("study_selected_series", List[StudySelectedSeries], IOType.IN_MEMORY)
 @md.env(pip_packages=["pydicom >= 2.3.0", "highdicom >= 0.18.2"])
 class ClinicalReviewPDFGenerator(Operator):
     """
@@ -44,25 +43,28 @@ class ClinicalReviewPDFGenerator(Operator):
         logging.info(f"Begin {self.compute.__name__}")
 
         # get list of masks
-        input_path = op_input.get("input_files").path
-        dcm_input_path = input_path / 'dcm_input'
-        nii_seg_output_path = input_path / 'nii_seg_output'
+        nii_seg_output_path = op_input.get("nii_seg_output_path").path
         nii_filenames = [join(nii_seg_output_path, f) for f in listdir(nii_seg_output_path) if
                          isfile(join(nii_seg_output_path, f)) and '.nii' in f]
-        ct_nifti = input_path / 'nii_ct_output' / 'input-ct-dataset.nii.gz'
 
-        # Get example CT dicom, get images and generate report
-        logging.info(f"Creating PDF  ...")
-        example_ct_file = [os.path.join(dcm_input_path, f) for f in os.listdir(dcm_input_path) if '.dcm' in f][0]
-        dcm_meta = pydicom.dcmread(example_ct_file, stop_before_pixels=True)
-        pdf_output_path = input_path / 'pdf'
+        # get original ct nifti
+        ct_nifti = op_input.get("nii_ct_dataset").path
+
+        # Get CT dicom metadata
+        original_image = op_input.get("study_selected_series_list")
+        study_selected_series = original_image[0]
+        selected_series = study_selected_series.selected_series
+        dcm_meta = selected_series[0].series.get_sop_instances()[0].get_native_sop_instance()
+
+        # create output
+        pdf_output_path = op_output.get().path / "pdf"
         Path(pdf_output_path).mkdir(parents=True, exist_ok=True)
 
         ax_img_path, sag_img_path, cor_img_path = self.create_images_for_contours(dcm_meta=dcm_meta,
                                                                                   output_path=pdf_output_path,
                                                                                   ct_nifti_filename=ct_nifti,
                                                                                   masks=nii_filenames)
-
+        logging.info(f"Creating PDF  ...")
         pdf_filename = self.generate_report_pdf(dcm_meta,
                                                 output_path=pdf_output_path,
                                                 ax_img_path=ax_img_path,
