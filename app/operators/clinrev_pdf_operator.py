@@ -35,34 +35,33 @@ _baseFontNameBI = tt2ps(_baseFontName, 1, 1)
 @md.env(pip_packages=["pydicom >= 2.3.0", "highdicom >= 0.18.2"])
 class ClinicalReviewPDFGenerator(Operator):
     """
-    Generates a PDF with Sag/Cor/Ax views for each structure
+    Generates a PDF file with Sag/Cor/Ax views for each structure.
+    Displays patient info and image series info.
     """
 
     def compute(self, op_input: InputContext, op_output: OutputContext, context: ExecutionContext):
 
         logging.info(f"Begin {self.compute.__name__}")
 
-        # get list of masks
+        # Get list of masks
         nii_seg_output_path = op_input.get("nii_seg_output_path").path
         nii_filenames = [join(nii_seg_output_path, f) for f in listdir(nii_seg_output_path) if
                          isfile(join(nii_seg_output_path, f)) and '.nii' in f]
 
-        # get original ct nifti
+        # Get original ct nifti
         ct_nifti = op_input.get("nii_ct_dataset").path
 
-        # Get CT dicom metadata
+        # get CT dicom metadata
         original_image = op_input.get("study_selected_series_list")
         study_selected_series = original_image[0]
         selected_series = study_selected_series.selected_series
         dcm_meta = selected_series[0].series.get_sop_instances()[0].get_native_sop_instance()
 
-        # create output directory
-
+        # Create output directory
         pdf_dir_name = "pdf"
         if not os.path.exists(pdf_dir_name):
             os.mkdir(pdf_dir_name)
 
-        pdf_filename = "clinical_review.pdf"
         ax_img_path, sag_img_path, cor_img_path = self.create_images_for_contours(dcm_meta=dcm_meta,
                                                                                   ct_nifti_filename=ct_nifti,
                                                                                   masks=nii_filenames)
@@ -90,7 +89,7 @@ class ClinicalReviewPDFGenerator(Operator):
         sag_aspect = ss / ps[1]
         cor_aspect = ss / ps[0]
 
-        # select midline projections
+        # Select midline projections
         sag_arr = np.rot90(a[int(a.shape[0] / 2), :, :])
         cor_arr = np.rot90(a[:, int(a.shape[1] / 2), :])
         ax_arr = np.rot90(a[:, :, int(a.shape[2] / 2)])
@@ -173,11 +172,8 @@ class ClinicalReviewPDFGenerator(Operator):
                             output_filename: str,
                             ):
         """
-        --Test Script--
-        Generates pdf report of the results. Takes a dicom image to
-        extract patient demographics and study information, and dict of results from classifier.
+        Generates pdf report of the results.
         Generates a PDF document that can be used downstream in the operator:
-
         - monai.deploy.operators.DICOMEncapsulatedPDFWriterOperator
 
         TODO: - format pdf for radiologist requirements, add extra info
@@ -236,9 +232,10 @@ class ClinicalReviewPDFGenerator(Operator):
                                          ]))
         story.append(img_info)
 
+        width = 8 * cm
+
         # Add axial images
         temp = utils.ImageReader(ax_img_path)
-        width = 8*cm
         iw, ih = temp.getSize()
         aspect = ih / float(iw)
         im1 = pl.Image(ax_img_path, width=width, height=(width * aspect))
