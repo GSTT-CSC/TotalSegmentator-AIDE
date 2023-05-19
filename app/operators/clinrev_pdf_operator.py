@@ -56,17 +56,19 @@ class ClinicalReviewPDFGenerator(Operator):
         selected_series = study_selected_series.selected_series
         dcm_meta = selected_series[0].series.get_sop_instances()[0].get_native_sop_instance()
 
-        # create output
-        pdf_output_path = op_output.get().path / "pdf"
-        Path(pdf_output_path).mkdir(parents=True, exist_ok=True)
+        # create output directory
 
+        pdf_dir_name = "pdf"
+        if not os.path.exists(pdf_dir_name):
+            os.mkdir(pdf_dir_name)
+
+        pdf_filename = "clinical_review.pdf"
         ax_img_path, sag_img_path, cor_img_path = self.create_images_for_contours(dcm_meta=dcm_meta,
-                                                                                  output_path=pdf_output_path,
                                                                                   ct_nifti_filename=ct_nifti,
                                                                                   masks=nii_filenames)
         logging.info(f"Creating PDF  ...")
         pdf_filename = self.generate_report_pdf(dcm_meta,
-                                                output_path=pdf_output_path,
+                                                output_filename="clinical_review.pdf",
                                                 ax_img_path=ax_img_path,
                                                 sag_img_path=sag_img_path,
                                                 cor_img_path=cor_img_path)
@@ -76,8 +78,7 @@ class ClinicalReviewPDFGenerator(Operator):
         logging.info(f"End {self.compute.__name__}")
         op_output.set(value=DataPath(pdf_filename), label='pdf_file')
 
-    def create_images_for_contours(self, dcm_meta: pydicom.Dataset, output_path: DataPath,
-                                   ct_nifti_filename: DataPath, masks: List):
+    def create_images_for_contours(self, dcm_meta: pydicom.Dataset, ct_nifti_filename: DataPath, masks: List):
 
         ct_img = nib.load(ct_nifti_filename)
         a = np.array(ct_img.dataobj)
@@ -120,9 +121,9 @@ class ClinicalReviewPDFGenerator(Operator):
                 logging.info(f"failed on {i} {mask}")
                 continue
 
-        ax_filename = output_path / 'axial_image.png'
-        sag_filename = output_path / 'sagittal_image.png'
-        cor_filename = output_path / 'coronal_image.png'
+        ax_filename = 'axial_image.png'
+        sag_filename = 'sagittal_image.png'
+        cor_filename = 'coronal_image.png'
         num_masks = len(ax_masks)
         axial_img_path = self.create_image(mask_arr=ax_masks,
                                            ct_arr=ax_arr,
@@ -169,7 +170,7 @@ class ClinicalReviewPDFGenerator(Operator):
                             ax_img_path: DataPath,
                             sag_img_path: DataPath,
                             cor_img_path: DataPath,
-                            output_path: DataPath,
+                            output_filename: str,
                             ):
         """
         --Test Script--
@@ -263,11 +264,10 @@ class ClinicalReviewPDFGenerator(Operator):
         story.append(Table([[im2, im3]], style=chart_style))
 
         #  Build PDF and save
-        pdf_path = output_path / "clinical_review.pdf"
-        doc = SimpleDocTemplate(filename=str(pdf_path), pagesize=A4)
+        doc = SimpleDocTemplate(filename=str(output_filename), pagesize=A4)
         doc.build(story)
 
-        return pdf_path
+        return output_filename
 
 
 
