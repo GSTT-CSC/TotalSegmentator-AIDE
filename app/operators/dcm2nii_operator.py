@@ -53,9 +53,10 @@ class Dcm2NiiOperator(Operator):
         # Local testing - copy input-ct-dataset.nii.gz from another folder, e.g. local_files in repo root
         # (hardcode this yourself)
 
-        #shutil.copyfile('../../local_files/input-ct-dataset.nii.gz',
+        # shutil.copyfile('../../local_files/input-ct-dataset.nii.gz',
         #                os.path.join(nii_ct_dataset_dirname, nii_ct_filename)
         # ---------
+
         nii_ct_filename = 'input-ct-dataset'  # nb: .nii.gz suffix should be omitted for dcm2niix -f option
 
         # run dcm2niix
