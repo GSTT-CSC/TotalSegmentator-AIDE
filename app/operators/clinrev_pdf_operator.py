@@ -182,17 +182,17 @@ class ClinicalReviewPDFGenerator(Operator):
         """
 
         # Get original dicom series image metadata
-        patient_name = ds_meta['PatientName'].value
-        dob = ds_meta['PatientBirthDate'].value
-        pat_id = ds_meta['PatientID'].value
-        sex = ds_meta['PatientSex'].value
-        consultant = ds_meta['ReferringPhysicianName'].value
-        study_description = ds_meta['StudyDescription'].value
-        series_description = ds_meta['SeriesDescription'].value
-        series_uid = ds_meta['SeriesInstanceUID'].value
-        xray_date = ds_meta['SeriesDate'].value
-        xray_time = ds_meta['AcquisitionTime'].value
-        accession_number = ds_meta['AccessionNumber'].value
+        patient_name = get_dcm_element(ds_meta, 'PatientName')
+        dob = get_dcm_element(ds_meta, 'PatientBirthDate')
+        pat_id = get_dcm_element(ds_meta, 'PatientID')
+        sex = get_dcm_element(ds_meta, 'PatientSex')
+        consultant = get_dcm_element(ds_meta, 'ReferringPhysicianName')
+        study_description = get_dcm_element(ds_meta, 'StudyDescription')
+        series_description = get_dcm_element(ds_meta, 'SeriesDescription')
+        series_uid = get_dcm_element(ds_meta, 'SeriesInstanceUID')
+        xray_date = get_dcm_element(ds_meta, 'SeriesDate')
+        xray_time = get_dcm_element(ds_meta, 'AcquisitionTime')
+        accession_number = get_dcm_element(ds_meta, 'AccessionNumber')
 
         # generate PDF
         logging.info("building pdf - using reportlab platypus flowables")
@@ -265,6 +265,22 @@ class ClinicalReviewPDFGenerator(Operator):
         doc.build(story)
 
         return output_filename
+
+
+def get_dcm_element(ds_meta, dcm_tag):
+    """
+    Return DICOM element only if it exists
+    :param ds_meta:
+    :param dcm_tag:
+    :return: dcm_tag value or "Unknown"
+    """
+    if dcm_tag in ds_meta:
+        return ds_meta[dcm_tag].value
+    else:
+        return "Unknown"
+
+
+
 
 
 
