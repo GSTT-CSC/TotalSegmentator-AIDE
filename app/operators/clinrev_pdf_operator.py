@@ -43,13 +43,13 @@ class ClinicalReviewPDFGenerator(Operator):
 
         logging.info(f"Begin {self.compute.__name__}")
 
-        # Get list of masks
+        # get list of contour files
         nii_seg_output_path = op_input.get("nii_seg_output_path").path
-        nii_filenames = [join(nii_seg_output_path, f) for f in listdir(nii_seg_output_path) if
-                         isfile(join(nii_seg_output_path, f)) and '.nii' in f]
+        nii_seg_filenames = [join(nii_seg_output_path, f) for f in listdir(nii_seg_output_path) if
+                             isfile(join(nii_seg_output_path, f)) and '.nii' in f]
 
-        # Get original ct nifti
-        ct_nifti = op_input.get("nii_ct_dataset").path
+        # get original CT nifti
+        nii_ct_filename = op_input.get("nii_ct_dataset").path
 
         # get CT dicom metadata
         original_image = op_input.get("study_selected_series_list")
@@ -57,25 +57,26 @@ class ClinicalReviewPDFGenerator(Operator):
         selected_series = study_selected_series.selected_series
         dcm_meta = selected_series[0].series.get_sop_instances()[0].get_native_sop_instance()
 
-        # Create output directory
+        # create output directory
         pdf_dir_name = "pdf"
         if not os.path.exists(pdf_dir_name):
             os.mkdir(pdf_dir_name)
 
         ax_img_path, sag_img_path, cor_img_path = self.create_images_for_contours(dcm_meta=dcm_meta,
-                                                                                  ct_nifti_filename=ct_nifti,
-                                                                                  masks=nii_filenames)
-        logging.info(f"Creating PDF  ...")
+                                                                                  ct_nifti_filename=nii_ct_filename,
+                                                                                  masks=nii_seg_filenames)
+        logging.info(f"Creating PDF ...")
         pdf_filename = self.generate_report_pdf(dcm_meta,
                                                 output_filename="clinical_review.pdf",
                                                 ax_img_path=ax_img_path,
                                                 sag_img_path=sag_img_path,
                                                 cor_img_path=cor_img_path)
-
-        logging.info(f"DICOM Encapsulated PDF written to {pdf_filename}")
         logging.info(f"PDF creation complete ...")
-        logging.info(f"End {self.compute.__name__}")
+
         op_output.set(value=DataPath(pdf_filename), label='pdf_file')
+        logging.info(f"DICOM Encapsulated PDF written to {pdf_filename}")
+
+        logging.info(f"End {self.compute.__name__}")
 
     def create_images_for_contours(self, dcm_meta: pydicom.Dataset, ct_nifti_filename: DataPath, masks: List):
 

@@ -58,7 +58,6 @@ class TotalSegmentatorApp(Application):
         dicom_encapsulation = DICOMEncapsulatedPDFWriterOperator(copy_tags=True, model_info=model_info)
 
         # Operator pipeline
-
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"nii_ct_dataset": "nii_ct_dataset"})
 
         self.add_flow(dcm2nii_op, rtstructwriter_op, {"dcm_input": "dcm_input"})

@@ -24,34 +24,30 @@ class Dcm2NiiOperator(Operator):
         logging.info(f"Begin {self.compute.__name__}")
 
         input_path = op_input.get("input_files").path
+        workdir = os.getcwd()
 
-        # get list of dicoms input path
-        # Set local_testing = True if doing local testing
-        local_testing = True
-        if local_testing:
-            input_files = sorted(os.listdir(str(input_path)))  # assumes .dcm in input/
-        else:
-            input_files = parse_recursively_dcm_files(str(input_path))  # assumes AIDE MinIO structure
+        # get list of DICOMs in input directory
+        input_files = sorted(os.listdir(str(input_path)))  # assumes .dcm in input/
 
-        # move input DICOM files into a dedicated folder for later
-        dcm_input_dir = "dcm_input"
+        # TODO: establish if parse_recursively_dcm_files required
+        # This function is a relic of the fetal app, which contained multiple DICOM series.
+        # CT data should only be single series, therefore this is probably surplus to requirements.
+        # Leaving this as a reminder for removal or integration with future release.
+        # input_files = parse_recursively_dcm_files(str(input_path))  # assumes AIDE MinIO structure
 
+        # move input DICOM files into .monai_workdir operators folder
+        dcm_input_dir = 'dcm_input'
         if not os.path.exists(dcm_input_dir):
             os.mkdir(dcm_input_dir)
 
         for f in input_files:
             if str(os.path.join(input_path, f)).lower().endswith('.dcm'):
-                shutil.copy(os.path.join(input_path, f), "dcm_input_dir")
+                shutil.copyfile(os.path.join(input_path, f), os.path.join(workdir, dcm_input_dir, f))
 
         # create output directory for input-ct-dataset.nii.gz
         nii_ct_dataset_dirname = 'nii_ct_dataset'
         if not os.path.exists(nii_ct_dataset_dirname):
             os.makedirs(nii_ct_dataset_dirname)
-
-        nii_ct_filename = 'input-ct-dataset.nii.gz'
-
-        # Run dcm2niix
-        subprocess.run(["dcm2niix", "-z", "y", "-o", nii_ct_dataset_dirname, "-f", nii_ct_filename, dcm_input_dir])
 
         # ---------
         # Local testing - copy input-ct-dataset.nii.gz from another folder, e.g. local_files in repo root
@@ -60,15 +56,17 @@ class Dcm2NiiOperator(Operator):
         #shutil.copyfile('../../local_files/input-ct-dataset.nii.gz',
         #                os.path.join(nii_ct_dataset_dirname, nii_ct_filename)
         # ---------
+        nii_ct_filename = 'input-ct-dataset'  # nb: .nii.gz suffix should be omitted for dcm2niix -f option
 
-        # Delete superfluous .json files
-        json_files = glob.glob(nii_ct_dataset_dirname + "/*.json")
-        for json_file in json_files:
-            os.remove(json_file)
+        # run dcm2niix
+        # TODO: check Eq_ files output by dcm2niix
+        # See here: https://github.com/rordenlab/dcm2niix/issues/119
+        # Potential for CT images to have non-equidistant slices
+        subprocess.run(["dcm2niix", "-z", "y", "-b", "n", "-o", nii_ct_dataset_dirname, "-f", nii_ct_filename, dcm_input_dir])
 
-        # Set output path for next operator
-        op_output.set(DataPath(nii_ct_filename), "nii_ct_dataset")
-        op_output.set(DataPath(dcm_input_dir), "dcm_input")
+        # set output path for next operator
+        op_output.set(DataPath(os.path.join(nii_ct_dataset_dirname, nii_ct_filename + '.nii.gz')), 'nii_ct_dataset')
+        op_output.set(DataPath(dcm_input_dir), 'dcm_input')
 
         logging.info("Performed dcm2niix conversion")
         logging.info(f"End {self.compute.__name__}")
