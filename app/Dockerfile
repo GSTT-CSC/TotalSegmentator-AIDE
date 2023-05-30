@@ -1,5 +1,7 @@
+ARG INIT_CONTAINER
+
 # Use initial MAP for build
-FROM ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.2 AS build
+FROM $INIT_CONTAINER AS build
 
 # Add dcm2niix to MAP
 WORKDIR /bin
