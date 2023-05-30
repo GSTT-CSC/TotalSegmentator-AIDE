@@ -39,23 +39,12 @@ jobs:
       run: |
         pip list
 
-    - name: Initial packaging of MAP-init
+    - name: Package MAP & test MAP end-to-end
       run: |
         monai-deploy package app --tag map/init:temp -l DEBUG
-
-    - name: Package 3rd-party software into MAP
-      run: |
-        docker build --build-arg INIT_CONTAINER=map/init:temp -t map/final:temp app
-
-    - name: Show Docker images
-      run: |
         docker images
-
-    - name: Test MAP end-to-end
-      run: |
+        docker build --build-arg INIT_CONTAINER=map/init:temp -t map/final:temp app
+        docker images
         monai-deploy run map tests/data/rtstructwriter/dcm tests/data/output
-
-    - name: Confirm output generated
-      run: |
         ls tests/data/output
         if test -f "tests/data/output/output-rt-struct.dcm"; then echo "Output RT Struct exists."; fi
