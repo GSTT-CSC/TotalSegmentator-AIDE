@@ -4,7 +4,7 @@ name: Build and package MAP
 
 on:
   push:
-    branches: ['24_publish_map']
+    branches: ['minimal_map_gha']
 
 jobs:
   build:
