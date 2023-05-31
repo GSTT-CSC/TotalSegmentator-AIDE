@@ -1,54 +1,53 @@
-# TotalSegmentator AIDE App
-#
-# TotalSegmentator is a tool for robust segmentation of 104 important anatomical structures in CT images.
-# Website: https://github.com/wasserth/TotalSegmentator
-#
-# TotalSegmentator is distributed under the Apache 2.0 licence. The code in this app is not created by the original
-# creators of TotalSegmentator.
-#
-# Tom Roberts (tom.roberts@gstt.nhs.uk / t.roberts@kcl.ac.uk)
+# Copyright 2021 MONAI Consortium
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import logging
+from gaussian_operator import GaussianOperator
+from median_operator import MedianOperator
+from sobel_operator import SobelOperator
 
-from monai.deploy.core import Application, resource
-
-from operators.dcm2nii_operator import Dcm2NiiOperator
-from operators.rtstructwriter_operator import RTStructWriterOperator
-from operators.totalsegmentator_operator import TotalSegmentatorOperator
+from monai.deploy.core import Application, env, resource
 
 
-@resource(cpu=1, gpu=1, memory="32Gi")
-class TotalSegmentatorApp(Application):
+@resource(cpu=1)
+# pip_packages can be a string that is a path(str) to requirements.txt file or a list of packages.
+@env(pip_packages=["scikit-image >= 0.17.2"])
+class App(Application):
+    """This is a very basic application.
+
+    This showcases the MONAI Deploy application framework.
     """
-    TotalSegmentator - segmentation of 104 anatomical structures in CT images.
-    """
 
-    name = "totalsegmentator-aide"
-    description = "Robust segmentation of 104 anatomical structures in CT images"
-    version = "0.1.2"
+    # App's name. <class name>('App') if not specified.
+    name = "simple_imaging_app"
+    # App's description. <class docstring> if not specified.
+    description = "This is a very simple application."
+    # App's version. <git version tag> or '0.0.0' if not specified.
+    version = "0.1.0"
 
     def compose(self):
-        """Operators go in here
+        """This application has three operators.
+
+        Each operator has a single input and a single output port.
+        Each operator performs some kind of image processing function.
         """
+        sobel_op = SobelOperator()
+        median_op = MedianOperator()
+        gaussian_op = GaussianOperator()
 
-        logging.info(f"Begin {self.compose.__name__}")
+        self.add_flow(sobel_op, median_op)
+        # self.add_flow(sobel_op, median_op, {"image": "image"})
+        # self.add_flow(sobel_op, median_op, {"image": {"image"}})
 
-        # DICOM to NIfTI operator
-        dcm2nii_op = Dcm2NiiOperator()
-
-        # TotalSegmentator segmentation
-        totalsegmentator_op = TotalSegmentatorOperator()
-
-        # RT Struct Writer operator
-        custom_tags = {"SeriesDescription": "AI generated image, not for clinical use."}
-        rtstructwriter_op = RTStructWriterOperator(custom_tags=custom_tags)
-
-        # Operator pipeline
-        self.add_flow(dcm2nii_op, totalsegmentator_op, {"input_files": "input_files"})
-        self.add_flow(totalsegmentator_op, rtstructwriter_op, {"input_files": "input_files"})
-
-        logging.info(f"End {self.compose.__name__}")
+        self.add_flow(median_op, gaussian_op)
 
 
 if __name__ == "__main__":
-    TotalSegmentatorApp(do_run=True)
+    App(do_run=True)

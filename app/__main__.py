@@ -1,4 +1,4 @@
-from app import TotalSegmentatorApp
+from app import App
 
 if __name__ == "__main__":
-    TotalSegmentatorApp(do_run=True)
+    App(do_run=True)
