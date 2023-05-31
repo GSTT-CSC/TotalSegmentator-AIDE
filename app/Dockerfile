@@ -19,7 +19,7 @@ ENV PATH="$PATH:/bin/dcm2niix/build/bin"
 WORKDIR /home
 
 RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y \
-    libsm6 libxrender-dev libxext6 ffmpeg
+    libsm6 libxrender-dev libxext6 ffmpeg libcairo2-dev
 
 RUN git clone https://github.com/GSTT-CSC/TotalSegmentator-AIDE \
     && python -m pip install --upgrade pip \
