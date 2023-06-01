@@ -18,7 +18,7 @@ import reportlab.platypus as pl  # import Table, TableStyle, Image
 from reportlab.platypus import Table, TableStyle
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, cm
 from reportlab.lib import utils, colors
 from reportlab.lib.fonts import tt2ps
@@ -201,6 +201,16 @@ class ClinicalReviewPDFGenerator(Operator):
         styles = getSampleStyleSheet()
         styleN = styles['Normal']
         styleH2 = styles['Heading2']
+        style_disclaimer = ParagraphStyle(name='Disclaimer',
+                                          parent=styles['Normal'],
+                                          fontName=_baseFontNameB,
+                                          fontSize=10,
+                                          spaceBefore=6,
+                                          spaceAfter=6,
+                                          textColor=colors.red)
+        style_footer = ParagraphStyle(name='Footer',
+                                      parent=styles['Normal'],
+                                      fontSize=8)
 
         # Add patient info
         story.append(Paragraph("TotalSegmentator-AIDE (v0.2.0)", styleH2))
@@ -214,7 +224,7 @@ class ClinicalReviewPDFGenerator(Operator):
             Paragraph("DISCLAIMER: This proof-of-concept implementation of TotalSegmentator is not intended for "
                       "deployment in a clinical or non-clinical setting without further development and compliance "
                       "with the UK Medical Device Regulations 2002 where the product qualifies as a medical device.",
-                      styleN))
+                      style_disclaimer))
 
         img_info_data = [['Patient Name', patient_name],
                          ['Date of Birth', dob],
@@ -260,12 +270,38 @@ class ClinicalReviewPDFGenerator(Operator):
         im3.hAlign = 'CENTRE'
 
         chart_style = TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                                  ('VALIGN', (0, 0), (-1, -1), 'CENTER')])
+                                  ('VALIGN', (0, 0), (-1, -1), 'MIDDLE')])
         story.append(im1)
         story.append(Table([[im2, im3]], style=chart_style))
 
+        # add logos in footer
+        csc_logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pdf_images', 'csc_logo.png')
+        basel_logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pdf_images', 'uhbasel_logo.png')
+
+        temp = utils.ImageReader(csc_logo_path)
+        iw, ih = temp.getSize()
+        aspect = ih / float(iw)
+        csc_logo = pl.Image(csc_logo_path, width=3 * cm , height=(3 * cm  * aspect))
+        csc_logo.hAlign = 'CENTER'
+
+        temp = utils.ImageReader(basel_logo_path)
+        iw, ih = temp.getSize()
+        aspect = ih / float(iw)
+        uhb_logo = pl.Image(basel_logo_path, width=3 * cm, height=(3 * cm * aspect))
+        uhb_logo.hAlign = 'CENTER'
+
+        chart_style_footer = TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                                         ('FONTSIZE', (0, 0), (-1, -1), 8)])
+        story.append(Table([[csc_logo, 'Application packaged by the CSC @ GSTT', uhb_logo]], style=chart_style_footer))
+
         #  Build PDF and save
-        doc = SimpleDocTemplate(filename=str(output_filename), pagesize=A4)
+        doc = SimpleDocTemplate(filename=str(output_filename),
+                                pagesize=A4,
+                                rightMargin=cm,
+                                leftMargin=cm,
+                                topMargin=cm,
+                                bottomMargin=cm)
         doc.build(story)
 
         return output_filename
