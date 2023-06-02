@@ -7,6 +7,7 @@
 # creators of TotalSegmentator.
 #
 # Tom Roberts (tom.roberts@gstt.nhs.uk / t.roberts@kcl.ac.uk)
+# Anil Mistry (anil.mistry@gstt.nhs.uk / anil.mistry@kcl.ac.uk)
 
 import logging
 
