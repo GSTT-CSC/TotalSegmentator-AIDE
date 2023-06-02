@@ -7,6 +7,7 @@
 # creators of TotalSegmentator.
 #
 # Tom Roberts (tom.roberts@gstt.nhs.uk / t.roberts@kcl.ac.uk)
+# Anil Mistry (anil.mistry@gstt.nhs.uk / anil.mistry@kcl.ac.uk)
 
 import logging
 
@@ -55,7 +56,10 @@ class TotalSegmentatorApp(Application):
 
         # Dicom encapsulation
         model_info = ModelInfo(creator="", name="", version="", uid="")
-        dicom_encapsulation = DICOMEncapsulatedPDFWriterOperator(copy_tags=True, model_info=model_info)
+        custom_tags = {"Modality": "DOC"}
+        dicom_encapsulation = DICOMEncapsulatedPDFWriterOperator(copy_tags=True,
+                                                                 model_info=model_info,
+                                                                 custom_tags=custom_tags)
 
         # Operator pipeline
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"nii_ct_dataset": "nii_ct_dataset"})
@@ -70,7 +74,6 @@ class TotalSegmentatorApp(Application):
 
         self.add_flow(selector, dicom_encapsulation, {"study_selected_series_list": "study_selected_series_list"})
         self.add_flow(pdf_generator, dicom_encapsulation, {"pdf_file": "pdf_file"})
-
 
         logging.info(f"End {self.compose.__name__}")
 
