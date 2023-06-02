@@ -210,13 +210,12 @@ class ClinicalReviewPDFGenerator(Operator):
                                           textColor=colors.red)
 
         # add Header
-        logo_width = 2 * cm
         csc_logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pdf_images', 'csc_logo.png')
         basel_logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pdf_images', 'uhbasel_logo.png')
         gstt_logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pdf_images', 'gstt_logo.png')
-        csc_logo = create_image_flowable(csc_logo_path, logo_width)
-        uhb_logo = create_image_flowable(basel_logo_path, logo_width)
-        gstt_logo = create_image_flowable(gstt_logo_path, logo_width)
+        csc_logo = create_image_flowable(csc_logo_path, width= 2 * cm)
+        uhb_logo = create_image_flowable(basel_logo_path, width= 3 * cm)
+        gstt_logo = create_image_flowable(gstt_logo_path, width= 2 * cm)
 
         chart_style_footer = TableStyle([('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                          ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
