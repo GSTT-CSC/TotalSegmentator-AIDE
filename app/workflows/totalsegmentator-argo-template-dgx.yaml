@@ -33,7 +33,7 @@ spec:
       metadata: {}
       container:
         name: ''
-        image: ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2
+        image: ghcr.io/gstt-csc/totalsegmentator-aide/map:0.2.0
         command:
           - /bin/bash
           - '-c'

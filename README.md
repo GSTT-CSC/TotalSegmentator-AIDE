@@ -70,17 +70,17 @@ The final MAP is called `map`
 
 ```shell
 # Initial packaging of MAP
-monai-deploy package app --tag ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.2 -l DEBUG
+monai-deploy package app --tag ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.2.0 -l DEBUG
 
 # Build 3rd-party software on top of MAP
-docker build -t ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2 app/
+docker build -t ghcr.io/gstt-csc/totalsegmentator-aide/map:0.2.0 app/
 
 # Test MAP with MONAI Deploy
-monai-deploy run ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2 input/ output/
+monai-deploy run ghcr.io/gstt-csc/totalsegmentator-aide/map:0.2.0 input/ output/
 
 # Push initial MAP and final MAP to GHCR
-docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.2
-docker push ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2
+docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.2.0
+docker push ghcr.io/gstt-csc/totalsegmentator-aide/map:0.2.0
 ```
 
 ### Optional 
@@ -88,19 +88,19 @@ docker push ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2
 Enter Docker container for testing
 
 ```shell
-docker run --gpus all -it --rm -v /TotalSegmentator-AIDE/input:/var/monai/input/ --entrypoint /bin/bash ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2
+docker run --gpus all -it --rm -v /TotalSegmentator-AIDE/input:/var/monai/input/ --entrypoint /bin/bash ghcr.io/gstt-csc/totalsegmentator-aide/map:0.2.0
 ```
 
 Run on specified GPU if machine has >1 available
 
 ```shell
-CUDA_VISIBLE_DEVICES=2 monai-deploy run ghcr.io/gstt-csc/totalsegmentator-aide/map:0.1.2 input/ output/
+CUDA_VISIBLE_DEVICES=2 monai-deploy run ghcr.io/gstt-csc/totalsegmentator-aide/map:0.2.0 input/ output/
 ```
 
 Reminder: if GHCR requires Personal Access Token
 ```shell
 echo $CR_PAT | docker login ghcr.io -u <github-username> --password-stdin
-docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.1.2
+docker push ghcr.io/gstt-csc/totalsegmentator-aide/map-init:0.2.0
 ```
 
 ## GitHub Packages
