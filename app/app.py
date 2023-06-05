@@ -3,11 +3,12 @@
 # TotalSegmentator is a tool for robust segmentation of 104 important anatomical structures in CT images.
 # Website: https://github.com/wasserth/TotalSegmentator
 #
-# TotalSegmentator is distributed under the Apache 2.0 licence. The code in this app is not created by the original
-# creators of TotalSegmentator.
+# TotalSegmentator is distributed under the Apache 2.0 licence. The code in this MONAI Application Package (MAP) is not
+# created by the original developers of TotalSegmentator. TotalSegmentator is created by University Hospital Basel.
 #
 # Tom Roberts (tom.roberts@gstt.nhs.uk / t.roberts@kcl.ac.uk)
 # Anil Mistry (anil.mistry@gstt.nhs.uk / anil.mistry@kcl.ac.uk)
+#
 
 import logging
 

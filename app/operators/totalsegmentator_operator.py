@@ -1,4 +1,8 @@
-# Perform automatic segmentation of 104 regions on CT imaging data with TotalSegmentator
+# TotalSegmentator operator
+#
+# This operator uses TotalSegmentator (https://github.com/wasserth/TotalSegmentator) to perform automated segmentation
+# of 104 regions in CT imaging data. TotalSegmentator is created by University Hospital Basel.
+#
 
 import logging
 import os

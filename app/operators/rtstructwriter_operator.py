@@ -1,4 +1,7 @@
-# RT Struct Writer - converts TotalSegmentator NIfTI segmentations to DICOM RT Struct format
+# RT Struct Writer operator
+#
+# This operator converts the TotalSegmentator output NIfTI segmentations to DICOM RTStruct format
+#
 
 import logging
 import os.path

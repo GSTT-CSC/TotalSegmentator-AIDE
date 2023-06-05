@@ -1,4 +1,25 @@
-# DICOM to NIfTI conversion operator
+# DICOM to NIfTI conversion using dcm2niix
+#
+# This operator uses Chris Rorden's dcm2niix (https://github.com/rordenlab/dcm2niix/) to convert a DICOM Series to a
+# single .nii.gz file. The MONAI Deploy DICOMSeriesSelectorOperator is used to access the .dcm filepaths in the
+# /var/monai/input/ folder within a MAP. The .dcm files are copied to an output operator folder within the
+# monai_workdir/. Here, dcm2niix is performed just on the .dcm files contained in this folder. The NIfTI file it output
+# in a separate folder called nii_ct_dataset, which can imported by subsequent operators
+# (i.e. totalsegmentator_operator.py).
+#
+# AIDE stores files within a MiniO bucket. The MiniO directory structure is:
+# PayloadID (folder)
+#   dcm (folder)
+#       StudyUID (folder)
+#           SeriesUID (folders)
+#               InstanceUID (files)
+#
+# The 'dcm' folder is mounted inside the MAP 'input' folder, e.g.:
+# /var/monai/input/ (folder)
+#   StudyUID (folder)
+#       SeriesUID (folders)
+#           InstanceUID (files)
+#
 
 import glob
 import logging
