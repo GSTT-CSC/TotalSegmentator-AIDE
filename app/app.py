@@ -63,12 +63,14 @@ class TotalSegmentatorApp(Application):
                                                                  custom_tags=custom_tags)
 
         # Operator pipeline
+        self.add_flow(loader, selector, {"dicom_study_list": "dicom_study_list"})
+
+        self.add_flow(selector, dcm2nii_op, {"study_selected_series_list": "study_selected_series_list"})
         self.add_flow(dcm2nii_op, totalsegmentator_op, {"nii_ct_dataset": "nii_ct_dataset"})
 
         self.add_flow(dcm2nii_op, rtstructwriter_op, {"dcm_input": "dcm_input"})
         self.add_flow(totalsegmentator_op, rtstructwriter_op, {"nii_seg_output_path": "nii_seg_output_path"})
 
-        self.add_flow(loader, selector, {"dicom_study_list": "dicom_study_list"})
         self.add_flow(selector, pdf_generator, {"study_selected_series_list": "study_selected_series_list"})
         self.add_flow(dcm2nii_op, pdf_generator, {"nii_ct_dataset": "nii_ct_dataset"})
         self.add_flow(totalsegmentator_op, pdf_generator, {"nii_seg_output_path": "nii_seg_output_path"})
