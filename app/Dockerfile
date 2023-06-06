@@ -36,7 +36,7 @@ RUN python -m pip install opencv-python==4.5.5.64
 
 # Workaround for rt-utils
 # see here: https://github.com/GSTT-CSC/TotalSegmentator-AIDE/issues/31
-COPY /home/TotalSegmentator-AIDE/rt-utils/ds_helper.py /root/.local/lib/python3.8/site-packages/rt_utils/
+RUN cp /home/TotalSegmentator-AIDE/app/rt-utils/ds_helper.py /root/.local/lib/python3.8/site-packages/rt_utils/
 
 # Add TotalSegmentator model weights to container
 WORKDIR /root
