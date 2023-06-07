@@ -3,7 +3,7 @@
 <h1 align="center">TotalSegmentator-AIDE</h1>
 <p align="center">
 <a href="https://github.com/GSTT-CSC/TotalSegmentator-AIDE">
-  <img src="docs/images/TotalSegmentation-AIDE_badge_organs.png" alt="Logo" width="30%">
+  <img src="docs/images/TotalSegmentation-AIDE_badge_organs.png" alt="Logo" width="45%">
 </a>
 <p align="center">
   <a href="https://github.com/wasserth/TotalSegmentator">TotalSegmentator</a> packaged as an AIDE Application, based on 
@@ -16,6 +16,7 @@
   <a href="https://github.com/GSTT-CSC/TotalSegmentator-AIDE/issues">Report Bug</a>
   ·
   <a href="https://github.com/GSTT-CSC/TotalSegmentator-AIDE/issues">Request Feature</a>
+  <br />
 </p>
 
 
