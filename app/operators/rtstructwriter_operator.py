@@ -1,19 +1,21 @@
-# RT Struct Writer - converts TotalSegmentator NIfTI segmentations to DICOM RT Struct format
+# RT Struct Writer operator
+#
+# This operator converts the TotalSegmentator output NIfTI segmentations to DICOM RTStruct format
+#
 
 import logging
 import os.path
 from os import listdir
 from os.path import isfile, join
-
 import nibabel as nib
 import numpy as np
 from rt_utils import RTStructBuilder
-
 import monai.deploy.core as md
 from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext
 
 
-@md.input("input_files", DataPath, IOType.DISK)
+@md.input("nii_seg_output_path", DataPath, IOType.DISK)
+@md.input("dcm_input", DataPath, IOType.DISK)
 @md.output("dicom_files", DataPath, IOType.DISK)
 @md.env(pip_packages=["pydicom >= 2.3.0", "rt-utils >= 1.2.7"])
 class RTStructWriterOperator(Operator):
@@ -25,48 +27,31 @@ class RTStructWriterOperator(Operator):
 
         logging.info(f"Begin {self.compute.__name__}")
 
-        input_path = op_input.get("input_files").path
-        dcm_input_path = input_path / 'dcm_input'
-        nii_seg_output_path = input_path / 'nii_seg_output'
+        # Gather inputs
+        dcm_input_path = op_input.get("dcm_input").path
+
+        nii_seg_output_path = op_input.get("nii_seg_output_path").path
+        nii_seg_files = list_nii_files(nii_seg_output_path)
+
         dcm_output_path = op_output.get().path
         rt_struct_output_filename = 'output-rt-struct.dcm'
 
-        nii_seg_files = list_nii_files(nii_seg_output_path)
-
-        logging.info("Creating RT Struct ...")
-
         # create new RT Struct - requires original DICOM
+        logging.info("Creating RT Struct ...")
         rtstruct = RTStructBuilder.create_new(dicom_series_path=dcm_input_path)
 
         # add TotalSegmentator segmentations to RT Struct
+        logging.info("Adding TotalSegmentator segmentatons to RT Struct ...")
         for idx, filename in enumerate(nii_seg_files):
             add_nii_roi_to_rtstruct(nii_seg_output_path, filename, rtstruct)
 
-        # round RT Struct ContourData to 10 d.p.
-        # TODO remove once new PyPI release of rt-utils
-        logging.info("Rounding ContourData values to 10 d.p. ...")
-
-        # loop over ROIs in rtstruct (1 per TotalSegmentator region)
-        for roi_idx in range(0, len(rtstruct.ds.ROIContourSequence)):
-            # if ROI has contours
-            if len(rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence) > 0:
-                # loop over the contours within the ROI
-                for cs_idx in range(0, len(rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence)):
-                    # contour_data_list = []  # for debugging
-                    # loop over the ContourData list
-                    for idx, c in enumerate(rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence[cs_idx].ContourData):
-                        # contour_data_list.append(decimal_check(c, 10))  # for debugging
-                        if decimal_check(c, 10) is True:
-                            rtstruct.ds.ROIContourSequence[roi_idx].ContourSequence[cs_idx].ContourData[idx] = round(c, 10)
-        logging.info("Rounding ContourData values complete ...")
-
         # save RT Struct
+        logging.info("Writing RT Struct ...")
         rtstruct.save(os.path.join(dcm_output_path, rt_struct_output_filename))
 
+        # Log off
         logging.info(f"RT Struct written to {os.path.join(dcm_output_path, rt_struct_output_filename)}")
-
         logging.info("RT Struct creation complete ...")
-
         logging.info(f"End {self.compute.__name__}")
 
 
@@ -104,22 +89,6 @@ def add_nii_roi_to_rtstruct(nii_seg_path, nii_filename, rtstruct):
         mask=nii_img,
         name=seg_name
     )
-
-
-def decimal_check(num, dec_places):
-    """
-    Check if number has more than N decimal places
-    :param num: Input number to check
-    :param dec_places: Number of decimal places to check
-    :return: True/False
-
-    # TODO remove once new PyPI release of rt-utils
-    """
-    dec_len = len(str(num).split(".")[1])
-    if dec_len > dec_places:
-        return True
-    elif dec_len <= dec_places:
-        return False
 
 
 def list_nii_files(nii_seg_output_path):
