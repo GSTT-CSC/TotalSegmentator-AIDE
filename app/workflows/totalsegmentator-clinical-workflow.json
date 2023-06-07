@@ -1,9 +1,9 @@
 {
   "name": "TotalSegmentator",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Clinical Workflow for TotalSegmentator",
   "informatics_gateway": {
-    "ae_title": "MONAI",
+    "ae_title": "AIDE",
     "data_origins": [],
     "export_destinations": [
       "PACS"
@@ -16,9 +16,6 @@
       "type": "argo",
       "args": {
         "workflow_template_name": "totalsegmentator-argo-template",
-        "server_url": "http://argo-argo-workflows-server.argo:2746",
-        "namespace": "argo",
-        "allow_insecure": "true"
       },
       "task_destinations": [
         {
@@ -49,7 +46,9 @@
       "id": "export-rt-struct",
       "description": "Export TotalSegmentator output RT Struct DICOMs",
       "type": "export",
-      "args": {},
+      "args": {
+        "workflow_name": "TotalSegmentator"
+      },
       "task_destinations": [],
       "export_destinations": [
         {
