@@ -1,0 +1,108 @@
+{
+  "name": "TotalSegmentator",
+  "version": "0.2.0",
+  "description": "Clinical Workflow for TotalSegmentator ",
+  "informatics_gateway": {
+    "ae_title": "AIDE",
+    "data_origins": [],
+    "export_destinations": [
+      "PACS"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "totalsegmentator-task",
+      "description": "TotalSegmentator automatic CT segmentation",
+      "type": "argo",
+      "args": {
+        "workflow_template_name": "totalsegmentator-argo-template"
+      },
+      "task_destinations": [
+        {
+          "name": "clinical-review-task",
+          "conditions": []
+        }
+      ],
+      "export_destinations": [],
+      "artifacts": {
+        "input": [
+          {
+            "name": "input-dicom",
+            "value": "{{ context.input.dicom }}",
+            "mandatory": true
+          }
+        ],
+        "output": [
+          {
+            "name": "output",
+            "value": "",
+            "mandatory": true
+          }
+        ]
+      },
+      "timeout_minutes": -1
+    },
+    {
+      "id": "clinical-review-task",
+      "description": "TotalSegmentator Clinical Review Task",
+      "type": "aide_clinical_review",
+      "args": {
+        "reviewed_task_id": "totalsegmentator-task",
+        "application_name": "totalsegmentator",
+        "application_version": "0.2.0",
+        "mode": "QA",
+        "reviewer_roles": "clinician",
+        "notifications": "true",
+        "workflow_name": "TotalSegmentator"
+      },
+      "task_destinations": [
+        {
+          "name": "export-rt-struct",
+          "conditions": []
+        }
+      ],
+      "export_destinations": [],
+      "artifacts": {
+        "input": [
+          {
+            "name": "input-dicom",
+            "value": "{{ context.input.dicom }}",
+            "mandatory": true
+          },
+          {
+            "name": "report-dicom",
+            "value": "{{ context.executions.totalsegmentator-task.artifacts.output }}",
+            "mandatory": true
+          }
+        ],
+        "output": []
+      },
+      "timeout_minutes": -1
+    },
+    {
+      "id": "export-rt-struct",
+      "description": "Export TotalSegmentator output RT Struct DICOMs",
+      "type": "export",
+      "args": {
+        "workflow_name": "TotalSegmentator"
+      },
+      "task_destinations": [],
+      "export_destinations": [
+        {
+          "name": "PACS"
+        }
+      ],
+      "artifacts": {
+        "input": [
+          {
+            "name": "output",
+            "value": "{{ context.executions.totalsegmentator-task.artifacts.output }}",
+            "mandatory": true
+          }
+        ],
+        "output": []
+      },
+      "timeout_minutes": -1
+    }
+  ]
+}
