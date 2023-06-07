@@ -1,10 +1,10 @@
 <!-- PROJECT HEADING -->
 <br />
-<h1 align="center">TotalSegmentator-AIDE</h1>
 <p align="center">
 <a href="https://github.com/GSTT-CSC/TotalSegmentator-AIDE">
   <img src="docs/images/TotalSegmentation-AIDE_badge_organs.png" alt="Logo" width="45%">
 </a>
+<h1 align="center">TotalSegmentator-AIDE</h1>
 <p align="center">
   <a href="https://github.com/wasserth/TotalSegmentator">TotalSegmentator</a> packaged as an AIDE Application, based on 
   the open-source <a href="https://github.com/Project-MONAI/monai-deploy/blob/main/guidelines/monai-application-package.md">
@@ -18,15 +18,6 @@
   <a href="https://github.com/GSTT-CSC/TotalSegmentator-AIDE/issues">Request Feature</a>
   <br />
 </p>
-
-
-[comment]: <> ([TotalSegmentator]&#40;https://github.com/wasserth/TotalSegmentator&#41; packaged as an AIDE Application, based on the [MONAI )
-
-[comment]: <> (Application Package &#40;MAP&#41;]&#40;https://github.com/Project-MONAI/monai-deploy/blob/main/guidelines/monai-application-package.md&#41; )
-
-[comment]: <> (standard.)
-
-[comment]: <> (![]&#40;docs/images/TotalSegmentation-AIDE_badge_organs.png&#41;)
 
 ## TotalSegmentator MAP workflow
 
