@@ -19,7 +19,7 @@ from operators.rtstructwriter_operator import RTStructWriterOperator
 from operators.totalsegmentator_operator import TotalSegmentatorOperator
 
 requirements_file = (
-    Path(__file__).resolve().parent / ".." / "requirements.txt"
+    Path(__file__).resolve().parent / "app_requirements.txt"
 )
 
 @resource(cpu=1, gpu=1, memory="32Gi")
