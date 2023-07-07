@@ -39,6 +39,15 @@ jobs:
       run: |
         pip list
 
+    - name: Free disk space
+      run: |
+        df -h
+        sudo swapoff -a
+        sudo rm -rf /swapfile /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo apt clean
+        docker rmi $(docker image ls -aq)
+        df -h
+
     - name: Package MAP & test MAP end-to-end
       run: |
         monai-deploy package app --base nvcr.io/nvidia/pytorch:22.08-py3 -r requirements-map-init.txt --tag map/init:temp -l DEBUG
