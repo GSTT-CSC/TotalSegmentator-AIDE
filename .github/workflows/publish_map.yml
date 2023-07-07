@@ -50,7 +50,7 @@ jobs:
 
     - name: Package MAP & test MAP end-to-end
       run: |
-        monai-deploy package app --base nvcr.io/nvidia/pytorch:22.08-py3 -r requirements-map-init.txt --working-dir app --tag map-init:temp -l DEBUG
+        monai-deploy package app --base nvcr.io/nvidia/pytorch:22.08-py3 --tag map-init:temp -l DEBUG
         docker images
         docker build --build-arg INIT_CONTAINER=map-init:temp -t map-final:temp app
         docker images

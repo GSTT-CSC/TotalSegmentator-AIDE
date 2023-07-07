@@ -9,15 +9,21 @@
 # Tom Roberts (tom.roberts@gstt.nhs.uk / t.roberts@kcl.ac.uk)
 
 import logging
+from pathlib import Path
 
+import monai.deploy.core as md
 from monai.deploy.core import Application, resource
 
 from operators.dcm2nii_operator import Dcm2NiiOperator
 from operators.rtstructwriter_operator import RTStructWriterOperator
 from operators.totalsegmentator_operator import TotalSegmentatorOperator
 
+requirements_file = (
+    Path(__file__).resolve().parent / ".." / "requirements.txt"
+)
 
 @resource(cpu=1, gpu=1, memory="32Gi")
+@md.env(pip_packages=requirements_file.as_posix())
 class TotalSegmentatorApp(Application):
     """
     TotalSegmentator - segmentation of 104 anatomical structures in CT images.
