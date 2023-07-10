@@ -14,6 +14,7 @@ class TestDcm2NiiConversion:
         self.dcm_ref_path = Path('data/dcm2nii/dcm/')
         self.nii_ref_file = Path('data/dcm2nii/nii/ct-test-data.nii.gz')
         self.nii_gen_path = Path('data/dcm2nii/nii_generated/')
+        self.nii_gen_filename = "generated-ct-test-data"
 
         self.monai_workdir = Path('data/dcm2nii/monai_workdir')
         os.makedirs(self.monai_workdir, exist_ok=True)
@@ -32,10 +33,13 @@ class TestDcm2NiiConversion:
 
     def test_dcm2niix(self):
         os.makedirs(self.nii_gen_path, exist_ok=True)
-        subprocess.run(["dcm2niix", "-z", "y", "-b", "n", "-o", self.nii_gen_path, "-f", "generated-ct-test-data",
-                        self.dcm_ref_path])
+        Dcm2NiiOperator.run_dcm2niix(
+            self.dcm_ref_path,
+            self.nii_gen_path,
+            self.nii_gen_filename
+        )
         img_ref = nib.load(self.nii_ref_file).get_fdata()
-        img_gen = nib.load(self.nii_gen_path / 'generated-ct-test-data.nii.gz').get_fdata()
+        img_gen = nib.load((self.nii_gen_path / self.nii_gen_filename).with_suffix('.nii.gz')).get_fdata()
         images_equal = np.array_equal(img_ref, img_gen)
         assert images_equal, f"Generated image array not equal to reference image array"
 
