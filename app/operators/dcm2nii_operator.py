@@ -40,11 +40,21 @@ class Dcm2NiiOperator(Operator):
     DICOM to NIfTI Operator
     """
 
+    def __init__(self):
+        super().__init__()
+        self.workdir = os.getcwd()
+        self.dcm_input_dir = 'dcm_input_dir'
+        self.nii_ct_dataset_dirname = 'nii_ct_dataset'
+        self.nii_ct_filename = 'input-ct-dataset'  # nb: .nii.gz suffix omitted for dcm2niix -f option
+
+    @staticmethod
+    def create_dir(dirname: str):
+        if not os.path.exists(dirname):
+            os.mkdir(dirname)
+
     def compute(self, op_input: InputContext, op_output: OutputContext, context: ExecutionContext):
 
         logging.info(f"Begin {self.compute.__name__}")
-
-        workdir = os.getcwd()
 
         # Copy .dcm files from input/ to monai_workdir/ for dcm2niix
         # We use dcm2niix to generate the NIfTI files required as input to TotalSegmentator. For robustness and ease of
@@ -54,14 +64,10 @@ class Dcm2NiiOperator(Operator):
         # benefit that the input/ directory is not manipulated.
 
         # create dcm_input_dir within monai_workdir
-        dcm_input_dir = 'dcm_input'
-        if not os.path.exists(dcm_input_dir):
-            os.mkdir(dcm_input_dir)
+        self.create_dir(self.dcm_input_dir)
 
         # create output directory for input-ct-dataset.nii.gz within monai_workdir
-        nii_ct_dataset_dirname = 'nii_ct_dataset'
-        if not os.path.exists(nii_ct_dataset_dirname):
-            os.makedirs(nii_ct_dataset_dirname)
+        self.create_dir(self.nii_ct_dataset_dirname)
 
         # copy across .dcm files - assumption: single DICOM series
         study_selected_series = op_input.get("study_selected_series_list")[0]
@@ -79,8 +85,6 @@ class Dcm2NiiOperator(Operator):
         # TODO: check Eq_ files output by dcm2niix
         # See here: https://github.com/rordenlab/dcm2niix/issues/119
         # Potential for CT images to have non-equidistant slices
-        nii_ct_filename = 'input-ct-dataset'  # nb: .nii.gz suffix should be omitted for dcm2niix -f option
-
         logging.info(f"Performing dcm2niix ...")
         subprocess.run(["dcm2niix", "-z", "y", "-b", "n", "-o", nii_ct_dataset_dirname, "-f", nii_ct_filename, dcm_input_dir])
 
