@@ -52,6 +52,32 @@ class Dcm2NiiOperator(Operator):
         if not os.path.exists(dirname):
             os.mkdir(dirname)
 
+    @staticmethod
+    def load_selected_series(op_input):
+        study_selected_series = op_input.get("study_selected_series_list")[0]  # nb: load single DICOM series
+        selected_series = study_selected_series.selected_series
+        num_instances_in_series = len(selected_series[0].series.get_sop_instances())
+        return selected_series, num_instances_in_series
+
+    def copy_dcm_to_workdir(self, selected_series, num_instances_in_series):
+        for idx, f in enumerate(selected_series[0].series.get_sop_instances()):
+            dcm_filepath = f._sop.filename
+            if str(dcm_filepath).lower().endswith('.dcm'):
+                logging.info(f"Copying DICOM Instance: {idx + 1}/{num_instances_in_series} ...")
+                destination_path = shutil.copy2(dcm_filepath, os.path.join(self.workdir, self.dcm_input_dir))
+                logging.info(f"Copied {dcm_filepath} to {destination_path}")
+
+    @staticmethod
+    def run_dcm2niix(input_dcm_dirname, output_nii_dirname, output_nii_filename):
+        subprocess.run(
+            ["dcm2niix",
+             "-z", "y",
+             "-b", "n",
+             "-o", output_nii_dirname,
+             "-f", output_nii_filename,
+             input_dcm_dirname]
+        )
+
     def compute(self, op_input: InputContext, op_output: OutputContext, context: ExecutionContext):
 
         logging.info(f"Begin {self.compute.__name__}")
@@ -69,28 +95,30 @@ class Dcm2NiiOperator(Operator):
         # create output directory for input-ct-dataset.nii.gz within monai_workdir
         self.create_dir(self.nii_ct_dataset_dirname)
 
-        # copy across .dcm files - assumption: single DICOM series
-        study_selected_series = op_input.get("study_selected_series_list")[0]
-        selected_series = study_selected_series.selected_series
-        num_instances_in_series = len(selected_series[0].series.get_sop_instances())
-
-        for idx, f in enumerate(selected_series[0].series.get_sop_instances()):
-            dcm_filepath = f._sop.filename
-            if str(dcm_filepath).lower().endswith('.dcm'):
-                logging.info(f"Copying DICOM Instance: {idx+1}/{num_instances_in_series} ...")
-                destination_path = shutil.copy2(dcm_filepath, os.path.join(workdir, dcm_input_dir))
-                logging.info(f"Copied {dcm_filepath} to {destination_path}")
+        # load series, copy across .dcm files
+        # assumption: single DICOM series
+        selected_series, num_instances_in_series = self.load_selected_series(op_input)
+        self.copy_dcm_to_workdir(selected_series, num_instances_in_series)
 
         # run dcm2niix
         # TODO: check Eq_ files output by dcm2niix
         # See here: https://github.com/rordenlab/dcm2niix/issues/119
         # Potential for CT images to have non-equidistant slices
         logging.info(f"Performing dcm2niix ...")
-        subprocess.run(["dcm2niix", "-z", "y", "-b", "n", "-o", nii_ct_dataset_dirname, "-f", nii_ct_filename, dcm_input_dir])
-
-        # set output path for next operator
-        op_output.set(DataPath(os.path.join(nii_ct_dataset_dirname, nii_ct_filename + '.nii.gz')), 'nii_ct_dataset')
-        op_output.set(DataPath(dcm_input_dir), 'dcm_input')
-
+        self.run_dcm2niix(
+            self.dcm_input_dir,
+            self.nii_ct_dataset_dirname,
+            self.nii_ct_filename
+        )
         logging.info("Performed dcm2niix conversion.")
+
+        # set output paths for next operator
+        op_output.set(DataPath(
+            os.path.join(self.nii_ct_dataset_dirname, self.nii_ct_filename + '.nii.gz')),
+            'nii_ct_dataset')
+
+        op_output.set(DataPath(
+            self.dcm_input_dir),
+            'dcm_input')
+
         logging.info(f"End {self.compute.__name__}")
