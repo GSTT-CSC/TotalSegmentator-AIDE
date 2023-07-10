@@ -27,6 +27,14 @@ class TestDcm2NiiConversion:
         Dcm2NiiOperator.create_dir(Path(self.monai_workdir / 'nii_ct_dataset'))
         assert Path(self.monai_workdir / 'nii_ct_dataset').is_dir()
 
+    def test_load_selected_series(self):
+        # TODO: need to import InputContext and StudySelectedSeries from monai.deploy.core
+        pass
+
+    def test_copy_dcm_to_workdir(self):
+        # TODO: need to importStudySelectedSeries from monai.deploy.core
+        pass
+
     def test_load_nifti(self):
         nii_obj = nib.load(self.nii_ref_file)
         assert issubclass(type(nii_obj), nib.nifti1.Nifti1Image)
