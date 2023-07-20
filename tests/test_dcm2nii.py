@@ -11,12 +11,12 @@ from app.operators.dcm2nii_operator import Dcm2NiiOperator
 
 class TestDcm2NiiConversion:
     def setup_method(self):
-        self.dcm_ref_path = Path('data/dcm2nii/dcm/')
-        self.nii_ref_file = Path('data/dcm2nii/nii/ct-test-data.nii.gz')
-        self.nii_gen_path = Path('data/dcm2nii/nii_generated/')
+        self.dcm_ref_path = Path('tests/data/dcm2nii/dcm/')
+        self.nii_ref_file = Path('tests/data/dcm2nii/nii/ct-test-data.nii.gz')
+        self.nii_gen_path = Path('tests/data/dcm2nii/nii_generated/')
         self.nii_gen_filename = "generated-ct-test-data"
 
-        self.monai_workdir = Path('data/dcm2nii/monai_workdir')
+        self.monai_workdir = Path('tests/data/dcm2nii/monai_workdir')
         os.makedirs(self.monai_workdir, exist_ok=True)
 
     def test_create_dcm_input_dir(self):
