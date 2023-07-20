@@ -58,12 +58,13 @@ class Dcm2NiiOperator(Operator):
         num_instances_in_series = len(selected_series[0].series.get_sop_instances())
         return selected_series, num_instances_in_series
 
-    def copy_dcm_to_workdir(self, selected_series, num_instances_in_series):
+    @staticmethod
+    def copy_dcm_to_workdir(selected_series, num_instances_in_series, workdir, dcm_input_dir):
         for idx, f in enumerate(selected_series[0].series.get_sop_instances()):
             dcm_filepath = f._sop.filename
             if str(dcm_filepath).lower().endswith('.dcm'):
                 logging.info(f"Copying DICOM Instance: {idx + 1}/{num_instances_in_series} ...")
-                destination_path = shutil.copy2(dcm_filepath, os.path.join(self.workdir, self.dcm_input_dir))
+                destination_path = shutil.copy2(dcm_filepath, os.path.join(workdir, dcm_input_dir))
                 logging.info(f"Copied {dcm_filepath} to {destination_path}")
 
     @staticmethod
@@ -98,7 +99,7 @@ class Dcm2NiiOperator(Operator):
         # assumption: single DICOM series
         study_selected_series = op_input.get("study_selected_series_list")[0]  # nb: load single DICOM series from Study
         selected_series, num_instances_in_series = self.load_selected_series(study_selected_series)
-        self.copy_dcm_to_workdir(selected_series, num_instances_in_series)
+        self.copy_dcm_to_workdir(selected_series, num_instances_in_series, self.workdir, self.dcm_input_dir)
 
         # run dcm2niix
         # TODO: check Eq_ files output by dcm2niix
