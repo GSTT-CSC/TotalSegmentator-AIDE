@@ -1,15 +1,11 @@
 import os
 import shutil
-import subprocess
 import nibabel as nib
 import numpy as np
-from monai.deploy.core import DataPath, ExecutionContext, InputContext, IOType, Operator, OutputContext, Application
-from monai.deploy.core.domain.dicom_series_selection import StudySelectedSeries
-from monai.deploy.operators import DICOMDataLoaderOperator
-from monai.deploy.operators import DICOMSeriesSelectorOperator
-
 from pathlib import Path
 
+from monai.deploy.operators import DICOMDataLoaderOperator
+from monai.deploy.operators import DICOMSeriesSelectorOperator
 from app.operators.dcm2nii_operator import Dcm2NiiOperator
 
 
