@@ -53,8 +53,7 @@ class Dcm2NiiOperator(Operator):
             os.mkdir(dirname)
 
     @staticmethod
-    def load_selected_series(op_input):
-        study_selected_series = op_input.get("study_selected_series_list")[0]  # nb: load single DICOM series
+    def load_selected_series(study_selected_series):
         selected_series = study_selected_series.selected_series
         num_instances_in_series = len(selected_series[0].series.get_sop_instances())
         return selected_series, num_instances_in_series
@@ -97,7 +96,8 @@ class Dcm2NiiOperator(Operator):
 
         # load series, copy across .dcm files
         # assumption: single DICOM series
-        selected_series, num_instances_in_series = self.load_selected_series(op_input)
+        study_selected_series = op_input.get("study_selected_series_list")[0]  # nb: load single DICOM series from Study
+        selected_series, num_instances_in_series = self.load_selected_series(study_selected_series)
         self.copy_dcm_to_workdir(selected_series, num_instances_in_series)
 
         # run dcm2niix
