@@ -50,7 +50,7 @@ class TestDcm2NiiConversion:
         Dcm2NiiOperator.copy_dcm_to_workdir(selected_series, num_instances_in_series,
                                             Path(self.monai_workdir), 'dcm_input_dir')
 
-        # assert three DICOM files copied to monai_workdir
+        # assert number of DICOM files copied to monai_workdir = number in test dataset
         num_files_in_dir = len([f for f in os.listdir(Path(self.monai_workdir / 'dcm_input_dir'))
                                 if not f.startswith('.')])
         assert num_instances_in_series == num_files_in_dir
