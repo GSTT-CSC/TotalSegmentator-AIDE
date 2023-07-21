@@ -32,7 +32,8 @@ jobs:
         cd dcm2niix
         mkdir build && cd build
         cmake ..
-        make install
+        # sudo required for make install into /usr/local/bin
+        sudo make install
 
     - name: Test dcm2niix install
       run: |
