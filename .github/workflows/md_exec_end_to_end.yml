@@ -1,0 +1,60 @@
+# Workflow to test running TotalSegmentator-AIDE app outside a MAP using monai-deploy exec
+
+name: monai-deploy exec End-to-end
+
+on:
+  pull_request:
+
+jobs:
+  md-exec-end-to-end:
+    name: monai-deploy exec End-to-end
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ '3.9' ]
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build dcm2niix
+      run: |
+        # build from source: https://github.com/rordenlab/dcm2niix#build-from-source
+        sudo apt-get install cmake pkg-config
+        git clone https://github.com/rordenlab/dcm2niix.git --branch master --single-branch
+        cd dcm2niix
+        mkdir build && cd build
+        cmake ..
+        # sudo required for make install into /usr/local/bin
+        sudo make install
+
+    - name: Test dcm2niix install
+      run: |
+        dcm2niix -h
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Python packages
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest pytest-cov
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Display installed pip packages
+      run: |
+        pip list
+
+    - name: Run monai-deploy exec
+      run: |
+        mkdir output
+        monai-deploy exec app -i tests/data/dcm2nii/dcm/ -o output/
