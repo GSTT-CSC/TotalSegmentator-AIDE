@@ -24,6 +24,20 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Build dcm2niix
+      run: |
+        # build from source: https://github.com/rordenlab/dcm2niix#build-from-source
+        sudo apt-get install cmake pkg-config
+        git clone https://github.com/rordenlab/dcm2niix.git --branch master --single-branch
+        cd dcm2niix
+        mkdir build && cd build
+        cmake ..
+        make install
+
+    - name: Test dcm2niix install
+      run: |
+        dcm2niix -h
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
