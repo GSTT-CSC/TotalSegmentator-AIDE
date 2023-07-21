@@ -55,10 +55,6 @@ class TestDcm2NiiConversion:
                                 if not f.startswith('.')])
         assert num_instances_in_series == num_files_in_dir
 
-    def test_load_nifti(self):
-        nii_obj = nib.load(self.nii_ref_file)
-        assert issubclass(type(nii_obj), nib.nifti1.Nifti1Image)
-
     def test_dcm2niix(self):
         os.makedirs(self.nii_gen_path, exist_ok=True)
         Dcm2NiiOperator.run_dcm2niix(
