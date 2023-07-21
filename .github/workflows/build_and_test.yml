@@ -1,6 +1,6 @@
 # Workflow to build run unit tests
 
-name: Unit Tests
+name: Build & run unit tests
 
 on:
   pull_request:
@@ -59,6 +59,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    steps:
     - name: Test with pytest
       run: |
         pytest tests/
