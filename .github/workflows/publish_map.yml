@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     runs-on: ${{ matrix.os }}
 
@@ -82,3 +83,16 @@ jobs:
 
     - name: Push Docker image
       run: docker push ghcr.io/${{ github.repository }}/map-final:temp
+
+    - name: Install sigstore cosign
+      uses: sigstore/cosign-installer@main
+
+    - name: Sign image
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      run: cosign sign --yes ghcr.io/${{ github.repository }}@${{ env.IMAGE_DIGEST }}
+
+    - name: Sign attestations
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      run: cosign attest --yes --type spdx --predicate sbom.spdx.json ghcr.io/${{ github.repository }}@${{ env.IMAGE_DIGEST }}
