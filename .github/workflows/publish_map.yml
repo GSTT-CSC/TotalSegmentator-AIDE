@@ -53,7 +53,14 @@ jobs:
         monai-deploy package app --base nvcr.io/nvidia/pytorch:22.08-py3 --tag map-init:temp -l DEBUG
         docker images
         docker build --build-arg INIT_CONTAINER=map-init:temp -t map-final:temp app
+        echo "IMAGE_DIGEST=$(docker images --no-trunc -q map-final:temp)" >> $GITHUB_ENV 
         docker images
         monai-deploy run map tests/data/rtstructwriter/dcm tests/data/output
         ls tests/data/output
         if test -f "tests/data/output/output-rt-struct.dcm"; then echo "Output RT Struct exists."; fi
+    - name: Build Software Build of Materials
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.IMAGE_DIGEST }} 
+        format: spdx-json
+        output: sbom.spdx.json
