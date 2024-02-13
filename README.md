@@ -147,3 +147,11 @@ To run TotalSegmentator on AIDE, two files from the `app/workflows` directory ar
 
 The `app/workflows` directory also contains four illustrative Argo Workflow Templates depending on system performance. 
 `low`, `medium`, `high` and `dgx` examples are provided with different CPU and RAM settings.
+
+## Troubleshooting
+**pycairo**
+
+If you encounter an issue during installation where pycairo cannot be installed, you may need to install libcairo2-dev via the following (assuming Linux):
+```shell
+sudo apt install libcairo2-dev
+```
